@@ -6,13 +6,12 @@ import { createErrorResponse } from '../types/response/message'
 export const createExerciseSchema = z.object({
     name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters'),
     difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]),
-    programID: z.number().int().positive('Program ID must be a positive integer')
+    programID: z.number().int().positive('Program ID must be a positive integer').optional()
 })
 
 export const updateExerciseSchema = z.object({
     name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters').optional(),
-    difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]).optional(),
-    programID: z.number().int().positive('Program ID must be a positive integer').optional()
+    difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]).optional()
 })
 
 // Exercise completion tracking schemas

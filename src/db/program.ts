@@ -34,11 +34,10 @@ export default (sequelize: Sequelize) => {
 	})
 
 	ProgramModel.associate = (models) => {
-		(ProgramModel as any).hasMany(models.Exercise, {
-			foreignKey: {
-				name: 'programID',
-				allowNull: true
-			},
+		(ProgramModel as any).belongsToMany(models.Exercise, {
+			through: models.ProgramWithExercise,
+			foreignKey: 'programID',
+			otherKey: 'exerciseID',
 			as: 'exercises'
 		})
 	}

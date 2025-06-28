@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express'
+import { Op } from 'sequelize'
 import { models } from '../db'
 import { authenticateJWT, requireAdmin } from '../middleware/auth'
 import { createErrorResponse, createSuccessResponse } from '../types/response/message'
@@ -10,7 +11,8 @@ const router: Router = Router()
 const {
 	Exercise,
 	Program,
-	User
+	User,
+	ProgramWithExercise
 } = models
 
 export default () => {
@@ -19,7 +21,7 @@ export default () => {
 		const exercises = await Exercise.findAll({
 			include: [{
 				model: Program,
-				as: 'program',
+				as: 'programs',
 				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
 			}],
 			attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
@@ -28,7 +30,31 @@ export default () => {
 		if (exercises.length === 0) {
 			return res.json(createErrorResponse('No exercises found'))
 		} else {
-			return res.json({ exercises })
+			return res.json(exercises)
+		}
+	})
+
+	// Public route - get all programs for a specific exercise
+	router.get('/:id/programs', async (req, res) => {
+		try {
+			const { id } = req.params
+
+			const exercise = await Exercise.findByPk(id, {
+				include: [{
+					model: Program,
+					as: 'programs',
+					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+				}],
+				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+			})
+
+			if (!exercise) {
+				return res.status(404).json(createErrorResponse('Exercise not found'))
+			}
+
+			return res.json(exercise.programs)
+		} catch (error) {
+			return res.status(500).json(createErrorResponse('Failed to get exercise programs'))
 		}
 	})
 
@@ -39,22 +65,25 @@ export default () => {
 		try {
 			const { name, difficulty, programID } = req.validatedBody
 
-			// Check if program exists
-			const program = await Program.findByPk(programID)
-			if (!program) {
-				return res.status(404).json(createErrorResponse('Program not found'))
+			// Check if exercise with same name already exists
+			const existingExercise = await Exercise.findOne({ where: { name } })
+			if (existingExercise) {
+				return res.status(400).json(createErrorResponse('Exercise with this name already exists'))
 			}
 
 			const exercise = await Exercise.create({
 				name,
-				difficulty,
-				programID
+				difficulty
 			})
 
-			return res.status(201).json({
-				data: exercise,
-				message: 'Exercise created successfully'
-			})
+			if (programID) {
+				await ProgramWithExercise.create({
+					programID,
+					exerciseID: exercise.id
+				})
+			}
+
+			return res.status(201).json(exercise)
 		} catch (error) {
 			return res.status(500).json(createErrorResponse('Failed to create exercise'))
 		}
@@ -64,25 +93,29 @@ export default () => {
 	router.patch('/:id', authenticateJWT, requireAdmin, validateRequest(updateExerciseSchema), async (req: ValidatedRequest<UpdateExerciseInput>, res) => {
 		try {
 			const { id } = req.params
-			const { name, difficulty, programID } = req.validatedBody
+			const { name, difficulty } = req.validatedBody
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
 				return res.status(404).json(createErrorResponse('Exercise not found'))
 			}
 
-			// Check if program exists if programID is being updated
-			if (programID) {
-				const program = await Program.findByPk(programID)
-				if (!program) {
-					return res.status(404).json(createErrorResponse('Program not found'))
+			// If name is being updated, check for duplicates
+			if (name) {
+				const existingExercise = await Exercise.findOne({
+					where: {
+						name,
+						id: { [Op.ne]: id } // Exclude current exercise
+					}
+				})
+				if (existingExercise) {
+					return res.status(400).json(createErrorResponse('Exercise with this name already exists'))
 				}
 			}
 
 			await exercise.update({
 				name,
-				difficulty,
-				programID
+				difficulty
 			})
 
 			return res.json(exercise)
@@ -110,9 +143,9 @@ export default () => {
 	})
 
 	// Add exercise to program
-	router.post('/:id/program/:programId', authenticateJWT, requireAdmin, async (req, res) => {
+	router.post('/:id', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
-			const { id, programId } = req.params
+			const { id, programId } = req.body
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
@@ -124,7 +157,22 @@ export default () => {
 				return res.status(404).json(createErrorResponse('Program not found'))
 			}
 
-			await exercise.update({ programID: programId })
+			// Check if the association already exists
+			const existingAssociation = await ProgramWithExercise.findOne({
+				where: {
+					exerciseID: id,
+					programID: programId
+				}
+			})
+
+			if (existingAssociation) {
+				return res.status(400).json(createErrorResponse('Exercise is already in this program'))
+			}
+
+			await ProgramWithExercise.create({
+				exerciseID: id,
+				programID: programId
+			})
 
 			return res.json(createSuccessResponse('Exercise added to program successfully'))
 		} catch (error) {
@@ -132,18 +180,29 @@ export default () => {
 		}
 	})
 
-	// Remove exercise from program (actually delete the exercise)
-	router.delete('/:id/program', authenticateJWT, requireAdmin, async (req, res) => {
+	// Remove exercise from program
+	router.delete('/', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
-			const { id } = req.params
+			const { programId, exerciseId } = req.body
 
-			const exercise = await Exercise.findByPk(id)
+			const exercise = await Exercise.findByPk(exerciseId)
 			if (!exercise) {
 				return res.status(404).json(createErrorResponse('Exercise not found'))
 			}
 
-			// Delete the exercise since it cannot exist without a program
-			await exercise.destroy()
+			// Find and delete the association
+			const association = await ProgramWithExercise.findOne({
+				where: {
+					exerciseID: exerciseId,
+					programID: programId
+				}
+			})
+
+			if (!association) {
+				return res.status(404).json(createErrorResponse('Exercise is not in this program'))
+			}
+
+			await association.destroy()
 
 			return res.json(createSuccessResponse('Exercise removed from program successfully'))
 		} catch (error) {

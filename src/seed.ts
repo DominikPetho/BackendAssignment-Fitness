@@ -1,7 +1,7 @@
 import { models, sequelize } from './db'
 import { USER_ROLE, EXERCISE_DIFFICULTY } from './utils/enums'
 
-const { User, Program, Exercise } = models
+const { User, Program, Exercise, ProgramWithExercise } = models
 
 const seed = async () => {
 	try {
@@ -51,28 +51,72 @@ const seed = async () => {
 		})
 
 		// Create exercises
-		await Exercise.create({
+		const pushUps = await Exercise.create({
 			name: 'Push-ups',
-			difficulty: EXERCISE_DIFFICULTY.EASY,
-			programID: program1.id
+			difficulty: EXERCISE_DIFFICULTY.EASY
 		})
 
-		await Exercise.create({
+		const squats = await Exercise.create({
 			name: 'Squats',
-			difficulty: EXERCISE_DIFFICULTY.EASY,
-			programID: program1.id
+			difficulty: EXERCISE_DIFFICULTY.EASY
 		})
 
-		await Exercise.create({
+		const pullUps = await Exercise.create({
 			name: 'Pull-ups',
-			difficulty: EXERCISE_DIFFICULTY.HARD,
-			programID: program2.id
+			difficulty: EXERCISE_DIFFICULTY.HARD
 		})
 
-		await Exercise.create({
+		const burpees = await Exercise.create({
 			name: 'Burpees',
-			difficulty: EXERCISE_DIFFICULTY.MEDIUM,
-			programID: program2.id
+			difficulty: EXERCISE_DIFFICULTY.MEDIUM
+		})
+
+		// Create exercises without programs to demonstrate the new functionality
+		const plank = await Exercise.create({
+			name: 'Plank',
+			difficulty: EXERCISE_DIFFICULTY.MEDIUM
+		})
+
+		const jumpingJacks = await Exercise.create({
+			name: 'Jumping Jacks',
+			difficulty: EXERCISE_DIFFICULTY.EASY
+		})
+
+		const mountainClimbers = await Exercise.create({
+			name: 'Mountain Climbers',
+			difficulty: EXERCISE_DIFFICULTY.MEDIUM
+		})
+
+		// Create program-exercise associations
+		await ProgramWithExercise.create({
+			programID: program1.id,
+			exerciseID: pushUps.id
+		})
+
+		await ProgramWithExercise.create({
+			programID: program1.id,
+			exerciseID: squats.id
+		})
+
+		await ProgramWithExercise.create({
+			programID: program2.id,
+			exerciseID: pullUps.id
+		})
+
+		await ProgramWithExercise.create({
+			programID: program2.id,
+			exerciseID: burpees.id
+		})
+
+		// Add some exercises to multiple programs to demonstrate many-to-many
+		await ProgramWithExercise.create({
+			programID: program1.id,
+			exerciseID: plank.id
+		})
+
+		await ProgramWithExercise.create({
+			programID: program2.id,
+			exerciseID: plank.id
 		})
 
 		console.log('Database seeded successfully!')

@@ -8,6 +8,7 @@ import defineExercise from './exercise'
 import defineProgram from './program'
 import defineUser from './user'
 import defineCompletedExercise from './completedExercise'
+import defineProgramWithExercise from './programExercise'
 
 const sequelize: Sequelize = new Sequelize(process.env.DATABASE_URL, {
 	logging: false
@@ -21,6 +22,7 @@ const modelsBuilder = (instance: Sequelize) => ({
 	Program: defineProgram(instance),
 	User: defineUser(instance),
 	CompletedExercise: defineCompletedExercise(instance),
+	ProgramWithExercise: defineProgramWithExercise(instance),
 })
 
 const models = modelsBuilder(sequelize)
