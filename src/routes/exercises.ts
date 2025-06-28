@@ -16,41 +16,66 @@ const {
 } = models
 
 export default () => {
-	// Public route - get all exercises with optional program filter
+	// Helper function to build search where clause
+	const buildSearchWhereClause = (search?: string) => {
+		if (!search) return {}
+
+		return {
+			name: {
+				[Op.iLike]: `%${search}%` // Case-insensitive search using ILIKE
+			}
+		}
+	}
+
+	// Helper function to build program include clause
+	const buildProgramIncludeClause = (programID?: string) => {
+		if (!programID) {
+			return [{
+				model: Program,
+				as: 'programs',
+				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] } as any,
+				through: { attributes: [] } as any
+			}]
+		}
+
+		return [{
+			model: Program,
+			as: 'programs',
+			where: { id: programID },
+			attributes: [] as any,
+			through: { attributes: [] } as any,
+			required: true
+		}]
+	}
+
+	// Helper function to build error message
+	const buildErrorMessage = (programID?: string, search?: string) => {
+		if (programID && search) {
+			return `No exercises found for program ${programID} matching "${search}"`
+		} else if (programID) {
+			return `No exercises found for program ${programID}`
+		} else if (search) {
+			return `No exercises found matching "${search}"`
+		}
+		return 'No exercises found'
+	}
+
+	// Public route - get all exercises with optional program filter and search
 	router.get('/', async (req, res) => {
 		try {
-			const { programID } = req.query
+			const { programID, search } = req.query
 
-			let exercises
+			const whereClause = buildSearchWhereClause(search as string)
+			const includeClause = buildProgramIncludeClause(programID as string)
 
-			// If programID is provided, filter exercises by that program
-			if (programID) {
-				exercises = await Exercise.findAll({
-					include: [{
-						model: Program,
-						as: 'programs',
-						where: { id: programID },
-						attributes: [], // Exclude all program attributes since we're filtering by program
-						through: { attributes: [] },
-						required: true // This ensures only exercises that belong to the program are returned
-					}],
-					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-				})
-			} else {
-				exercises = await Exercise.findAll({
-					include: [{
-						model: Program,
-						as: 'programs',
-						attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-					}],
-					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-				})
-			}
+			const exercises = await Exercise.findAll({
+				where: whereClause,
+				include: includeClause,
+				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+			})
 
 			if (exercises.length === 0) {
-				const message = programID
-					? `No exercises found for program ${programID}`
-					: 'No exercises found'
+				const message = buildErrorMessage(programID as string, search as string)
 				return res.json(createErrorResponse(message))
 			} else {
 				return res.json(exercises)
@@ -171,14 +196,15 @@ export default () => {
 	// Add exercise to program
 	router.post('/:id', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
-			const { id, programId } = req.body
+			const { id } = req.params
+			const { programID } = req.body
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
 				return res.status(404).json(createErrorResponse('Exercise not found'))
 			}
 
-			const program = await Program.findByPk(programId)
+			const program = await Program.findByPk(programID)
 			if (!program) {
 				return res.status(404).json(createErrorResponse('Program not found'))
 			}
@@ -187,7 +213,7 @@ export default () => {
 			const existingAssociation = await ProgramWithExercise.findOne({
 				where: {
 					exerciseID: id,
-					programID: programId
+					programID: programID
 				}
 			})
 
@@ -197,7 +223,7 @@ export default () => {
 
 			await ProgramWithExercise.create({
 				exerciseID: id,
-				programID: programId
+				programID: programID
 			})
 
 			return res.json(createSuccessResponse('Exercise added to program successfully'))
