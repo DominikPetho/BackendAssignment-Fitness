@@ -17,7 +17,7 @@ const httpServer = http.createServer(app)
 
 sequelize.sync()
 
-console.log('Sync database', 'postgresql://localhost:5432/fitness_app')
+console.log('Sync database', process.env.DATABASE_URL)
 
 httpServer.listen(8000).on('listening', () => console.log(`Server started at port ${8000}`))
 
