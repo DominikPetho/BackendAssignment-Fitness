@@ -1,4 +1,4 @@
-FROM node:12.22.12-alpine
+FROM node:12.14-alpine
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies using package-lock.json for consistency
-RUN npm ci
+RUN npm i
 
 # Copy source code
 COPY . .
