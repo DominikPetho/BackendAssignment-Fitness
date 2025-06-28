@@ -1,0 +1,48 @@
+import * as z from 'zod'
+import { USER_ROLE, EXERCISE_DIFFICULTY } from '../utils/enums'
+import { createErrorResponse } from '../types/response/message'
+
+// Exercise validation schemas
+export const createExerciseSchema = z.object({
+    name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters'),
+    difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]),
+    programID: z.number().int().positive('Program ID must be a positive integer').optional()
+})
+
+export const updateExerciseSchema = z.object({
+    name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters').optional(),
+    difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]).optional(),
+    programID: z.number().int().positive('Program ID must be a positive integer').optional()
+})
+
+// User validation schemas
+export const updateUserSchema = z.object({
+    name: z.string().min(1, 'Name must not be empty').max(100, 'Name must be less than 100 characters').optional(),
+    surname: z.string().min(1, 'Surname must not be empty').max(100, 'Surname must be less than 100 characters').optional(),
+    nickName: z.string().min(1, 'Nickname must not be empty').max(50, 'Nickname must be less than 50 characters').optional(),
+    age: z.number().int().min(1, 'Age must be at least 1').max(120, 'Age must be at most 120').optional(),
+    email: z.string().email('Please provide a valid email address').optional(),
+    role: z.enum([USER_ROLE.ADMIN, USER_ROLE.USER]).optional()
+})
+
+// Type inference from schemas
+export type CreateExerciseInput = z.infer<typeof createExerciseSchema>
+export type UpdateExerciseInput = z.infer<typeof updateExerciseSchema>
+export type UpdateUserInput = z.infer<typeof updateUserSchema>
+
+// Validation middleware helper
+export const validateRequest = <T>(schema: z.ZodSchema<T>) => {
+    return (req: any, res: any, next: any) => {
+        try {
+            const validatedData = schema.parse(req.body)
+            req.validatedBody = validatedData
+            next()
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errorMessage = error.errors.map((err: any) => err.message).join(', ')
+                return res.status(400).json(createErrorResponse(errorMessage))
+            }
+            return res.status(400).json(createErrorResponse('Validation failed'))
+        }
+    }
+} 

@@ -6,6 +6,7 @@ import { sequelize } from './db'
 import ProgramRouter from './routes/programs'
 import ExerciseRouter from './routes/exercises'
 import AuthRouter from './routes/auth'
+import UserRouter from './routes/users'
 
 const app = express()
 
@@ -18,6 +19,7 @@ app.use('/auth', AuthRouter())
 // Protected routes (authentication required)
 app.use('/programs', ProgramRouter())
 app.use('/exercises', ExerciseRouter())
+app.use('/users', UserRouter())
 
 const httpServer = http.createServer(app)
 

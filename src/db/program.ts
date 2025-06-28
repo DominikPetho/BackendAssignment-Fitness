@@ -12,7 +12,6 @@ export class ProgramModel extends DatabaseModel {
 	id: number
 	difficulty: EXERCISE_DIFFICULTY
 	name: String
-
 	exercises: ExerciseModel[]
 }
 
@@ -38,9 +37,9 @@ export default (sequelize: Sequelize) => {
 		(ProgramModel as any).hasMany(models.Exercise, {
 			foreignKey: {
 				name: 'programID',
-				allowNull: false
+				allowNull: true
 			},
-			as: 'translations'
+			as: 'exercises'
 		})
 	}
 
