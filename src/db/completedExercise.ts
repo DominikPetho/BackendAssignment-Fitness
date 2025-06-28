@@ -42,7 +42,9 @@ export default (sequelize: Sequelize) => {
             references: {
                 model: 'exercises',
                 key: 'id'
-            }
+            },
+            onDelete: 'RESTRICT',
+            onUpdate: 'CASCADE'
         },
         completedAt: {
             type: DataTypes.DATE,
@@ -57,7 +59,6 @@ export default (sequelize: Sequelize) => {
             }
         }
     }, {
-        paranoid: true,
         timestamps: true,
         sequelize,
         modelName: 'completedExercise',

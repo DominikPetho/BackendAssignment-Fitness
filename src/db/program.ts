@@ -38,7 +38,9 @@ export default (sequelize: Sequelize) => {
 			through: models.ProgramWithExercise,
 			foreignKey: 'programID',
 			otherKey: 'exerciseID',
-			as: 'exercises'
+			as: 'exercises',
+			onDelete: 'CASCADE',
+			onUpdate: 'CASCADE'
 		})
 	}
 

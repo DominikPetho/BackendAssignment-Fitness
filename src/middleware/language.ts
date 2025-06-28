@@ -16,7 +16,6 @@ export const languageMiddleware = (req: LanguageRequest, res: Response, next: Ne
     // Set language in request object
     req.language = validLanguage
 
-    console.log('language', language)
     // Change i18next language
     i18next.changeLanguage(validLanguage)
 

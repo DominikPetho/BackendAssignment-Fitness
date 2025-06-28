@@ -14,7 +14,9 @@
             "addToProgramFailed": "Nepodarilo sa pridať cvičenie do programu",
             "removeFromProgramFailed": "Nepodarilo sa odstrániť cvičenie z programu",
             "fetchFailed": "Nepodarilo sa načítať cvičenia",
-            "getProgramsFailed": "Nepodarilo sa načítať programy cvičenia"
+            "getProgramsFailed": "Nepodarilo sa načítať programy cvičenia",
+            "cannotDeleteWithCompleted": "Cvičenie nie je možné vymazať, pretože má dokončené cvičenia. Najprv odstráňte všetky dokončené cvičenia.",
+            "checkDeleteFailed": "Nepodarilo sa skontrolovať, či je možné vymazať cvičenie"
         },
         "completedExercise": {
             "removed": "Dokončené cvičenie bolo úspešne odstránené",

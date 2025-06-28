@@ -14,7 +14,9 @@
             "addToProgramFailed": "Failed to add exercise to program",
             "removeFromProgramFailed": "Failed to remove exercise from program",
             "fetchFailed": "Failed to fetch exercises",
-            "getProgramsFailed": "Failed to get exercise programs"
+            "getProgramsFailed": "Failed to get exercise programs",
+            "cannotDeleteWithCompleted": "Cannot delete exercise because it has completed exercises. Please delete all completed exercises first.",
+            "checkDeleteFailed": "Failed to check if exercise can be deleted"
         },
         "completedExercise": {
             "removed": "Completed exercise removed successfully",

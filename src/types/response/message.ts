@@ -13,9 +13,10 @@ export interface ResponseMessage {
 }
 
 // Helper functions to create response messages
-export const createErrorResponse = (translationKey: string): ResponseMessage => ({
+export const createErrorResponse = (translationKey: string, error?: any): ResponseMessage => ({
     message: i18next.t(translationKey),
-    type: MessageType.ERROR
+    type: MessageType.ERROR,
+    ...(error && { error: error.toString() })
 })
 
 export const createSuccessResponse = (translationKey: string): ResponseMessage => ({

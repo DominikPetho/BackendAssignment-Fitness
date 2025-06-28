@@ -108,7 +108,9 @@ export default (sequelize: Sequelize) => {
                 name: 'userID',
                 allowNull: false
             },
-            as: 'completedExercises'
+            as: 'completedExercises',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
         })
     }
 

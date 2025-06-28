@@ -33,7 +33,6 @@ export default (sequelize: Sequelize) => {
 			type: DataTypes.STRING(200),
 		}
 	}, {
-		paranoid: true,
 		timestamps: true,
 		sequelize,
 		modelName: 'exercise'
@@ -45,6 +44,16 @@ export default (sequelize: Sequelize) => {
 			foreignKey: 'exerciseID',
 			otherKey: 'programID',
 			as: 'programs'
+		})
+
+		ExerciseModel.hasMany(models.CompletedExercise, {
+			foreignKey: {
+				name: 'exerciseID',
+				allowNull: false
+			},
+			as: 'completedExercises',
+			onDelete: 'RESTRICT',
+			onUpdate: 'CASCADE'
 		})
 	}
 

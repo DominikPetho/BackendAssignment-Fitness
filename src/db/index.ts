@@ -8,7 +8,7 @@ import defineExercise from './exercise'
 import defineProgram from './program'
 import defineUser from './user'
 import defineCompletedExercise from './completedExercise'
-import defineProgramWithExercise from './programExercise'
+import defineProgramWithExercise from './programWithExercise'
 
 const sequelize: Sequelize = new Sequelize(process.env.DATABASE_URL, {
 	logging: false

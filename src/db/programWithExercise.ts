@@ -25,7 +25,9 @@ export default (sequelize: Sequelize) => {
             references: {
                 model: 'programs',
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
         },
         exerciseID: {
             type: DataTypes.BIGINT,
@@ -33,10 +35,11 @@ export default (sequelize: Sequelize) => {
             references: {
                 model: 'exercises',
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
         }
     }, {
-        paranoid: true,
         timestamps: true,
         sequelize,
         modelName: 'programWithExercise',

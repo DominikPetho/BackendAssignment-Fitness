@@ -12,7 +12,8 @@ const {
 	Exercise,
 	Program,
 	User,
-	ProgramWithExercise
+	ProgramWithExercise,
+	CompletedExercise
 } = models
 
 export default () => {
@@ -233,11 +234,12 @@ export default () => {
 				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
+			// Try to delete the exercise - foreign key constraints will prevent deletion if completed exercises exist
 			await exercise.destroy()
 
 			return res.json(createSuccessResponse('exercise.deleted'))
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('exercise.deleteFailed'))
+			return res.status(500).json(createErrorResponse('exercise.deleteFailed', error))
 		}
 	})
 
