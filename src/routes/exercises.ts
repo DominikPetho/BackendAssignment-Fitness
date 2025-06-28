@@ -16,6 +16,28 @@ const {
 } = models
 
 export default () => {
+	// Helper function to build pagination options
+	const buildPaginationOptions = (page?: string, limit?: string) => {
+		// If neither page nor limit is provided, return null to indicate no pagination
+		if (!page && !limit) {
+			return null
+		}
+
+		const pageNumber = parseInt(page || '1', 10)
+		const limitNumber = parseInt(limit || '10', 10)
+
+		// Ensure reasonable limits
+		const maxLimit = 50
+		const actualLimit = Math.min(limitNumber, maxLimit)
+		const offset = (pageNumber - 1) * actualLimit
+
+		return {
+			limit: actualLimit,
+			offset: offset,
+			page: pageNumber
+		}
+	}
+
 	// Helper function to build search where clause
 	const buildSearchWhereClause = (search?: string) => {
 		if (!search) return {}
@@ -60,25 +82,51 @@ export default () => {
 		return 'No exercises found'
 	}
 
-	// Public route - get all exercises with optional program filter and search
+	// Public route - get all exercises with optional program filter, search, and pagination
 	router.get('/', async (req, res) => {
 		try {
-			const { programID, search } = req.query
+			const { programID, search, page, limit } = req.query
 
 			const whereClause = buildSearchWhereClause(search as string)
 			const includeClause = buildProgramIncludeClause(programID as string)
+			const paginationOptions = buildPaginationOptions(page as string, limit as string)
 
-			const exercises = await Exercise.findAll({
+			// Build query options
+			const queryOptions: any = {
 				where: whereClause,
 				include: includeClause,
 				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-			})
+			}
 
-			if (exercises.length === 0) {
+			// Add pagination only if pagination options are provided
+			if (paginationOptions) {
+				queryOptions.limit = paginationOptions.limit
+				queryOptions.offset = paginationOptions.offset
+			}
+
+			const exercises = await Exercise.findAndCountAll(queryOptions)
+
+			if (exercises.rows.length === 0) {
 				const message = buildErrorMessage(programID as string, search as string)
 				return res.json(createErrorResponse(message))
 			} else {
-				return res.json(exercises)
+				// If pagination is not applied, return simple array
+				if (!paginationOptions) {
+					return res.json(exercises.rows)
+				}
+
+				// If pagination is applied, return structured response
+				const totalPages = Math.ceil(exercises.count / paginationOptions.limit)
+				const response = {
+					data: exercises.rows,
+					pagination: {
+						currentPage: paginationOptions.page,
+						totalPages,
+						totalItems: exercises.count,
+						hasNextPage: paginationOptions.page < totalPages,
+					}
+				}
+				return res.json(response)
 			}
 		} catch (error) {
 			return res.status(500).json(createErrorResponse('Failed to fetch exercises'))
