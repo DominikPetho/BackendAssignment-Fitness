@@ -3,79 +3,84 @@ import { models } from '../db'
 import { authenticateJWT, requireAdmin } from '../middleware/auth'
 import { createErrorResponse } from '../types/response/message'
 import { validateRequest, updateUserSchema, UpdateUserInput } from '../validation/admin'
+import { AuthenticatedRequest } from '../middleware/auth'
+import { USER_ROLE } from '../utils/enums'
+import { ValidatedRequest } from '../validation/validation-interface'
 
 const router: Router = Router()
 
 const { User } = models
 
-// Custom interface for authenticated requests
-interface AuthenticatedRequest extends Request {
-    user?: any
-}
-
-// Custom interface for requests with validated body
-interface ValidatedRequest<T> extends Request {
-    validatedBody: T
-}
-
 export default () => {
-    // Get all users (ADMIN only)
-    router.get('/', authenticateJWT, requireAdmin, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // Get all users
+    router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res) => {
         try {
             const users = await User.findAll({
-                attributes: { exclude: ['password'] } // Don't return passwords
+                attributes: req.user.role === USER_ROLE.ADMIN
+                    ? { exclude: ['password'] }
+                    : ['id', 'nickName'],
+                ...(req.user.role === USER_ROLE.ADMIN && {
+                    include: [
+                        {
+                            model: models.CompletedExercise,
+                            as: 'completedExercises',
+                            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                            include: [{
+                                model: models.Exercise,
+                                as: 'exercise',
+                                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+                            }]
+                        }
+                    ]
+                })
             })
 
-            return res.json({
-                data: users,
-                message: 'List of all users'
-            })
+            return res.json(users)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to fetch users'))
+            return res.status(500).json(createErrorResponse('Failed to fetch users error: ' + error))
         }
     })
 
     // Get user detail by ID (ADMIN only)
-    router.get('/:id', authenticateJWT, requireAdmin, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    router.get('/:id', authenticateJWT, requireAdmin, async (req: AuthenticatedRequest, res) => {
         try {
             const { id } = req.params
 
             const user = await User.findByPk(id, {
-                attributes: { exclude: ['password'] } // Don't return password
+                attributes: { exclude: ['password'] },
+                include: [
+                    {
+                        model: models.CompletedExercise,
+                        as: 'completedExercises',
+                        attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+                        include: [{
+                            model: models.Exercise,
+                            as: 'exercise',
+                            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+                        }]
+                    }
+                ]
             })
 
             if (!user) {
                 return res.status(404).json(createErrorResponse('User not found'))
             }
 
-            return res.json({
-                data: user,
-                message: 'User details retrieved successfully'
-            })
+            return res.json(user)
         } catch (error) {
             return res.status(500).json(createErrorResponse('Failed to fetch user details'))
         }
     })
 
     // Update user (ADMIN only)
-    router.put('/:id', authenticateJWT, requireAdmin, validateRequest(updateUserSchema), async (req: ValidatedRequest<UpdateUserInput>, res: Response, next: NextFunction) => {
+    router.patch('/:id', authenticateJWT, requireAdmin, validateRequest(updateUserSchema), async (req: ValidatedRequest<UpdateUserInput>, res) => {
         try {
             const { id } = req.params
-            const { name, surname, nickName, age, email, role } = req.validatedBody
+            const { name, surname, nickName, age, role } = req.validatedBody
 
             const user = await User.findByPk(id)
             if (!user) {
                 return res.status(404).json(createErrorResponse('User not found'))
-            }
-
-            // Check if email is being updated and if it's already taken by another user
-            if (email && email !== user.email) {
-                const existingUser = await User.findOne({
-                    where: { email }
-                })
-                if (existingUser) {
-                    return res.status(409).json(createErrorResponse('Email already exists'))
-                }
             }
 
             // Check if nickName is being updated and if it's already taken by another user
@@ -94,20 +99,16 @@ export default () => {
             if (surname !== undefined) updateData.surname = surname
             if (nickName !== undefined) updateData.nickName = nickName
             if (age !== undefined) updateData.age = age
-            if (email !== undefined) updateData.email = email
             if (role !== undefined) updateData.role = role
 
-            await user.update(updateData)
+            const value = await user.update(updateData)
 
             // Return updated user without password
             const updatedUser = await User.findByPk(id, {
                 attributes: { exclude: ['password'] }
             })
 
-            return res.json({
-                data: updatedUser,
-                message: 'User updated successfully'
-            })
+            return res.json(updatedUser)
         } catch (error) {
             return res.status(500).json(createErrorResponse('Failed to update user'))
         }

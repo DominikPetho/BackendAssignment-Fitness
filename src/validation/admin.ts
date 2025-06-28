@@ -6,13 +6,24 @@ import { createErrorResponse } from '../types/response/message'
 export const createExerciseSchema = z.object({
     name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters'),
     difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]),
-    programID: z.number().int().positive('Program ID must be a positive integer').optional()
+    programID: z.number().int().positive('Program ID must be a positive integer')
 })
 
 export const updateExerciseSchema = z.object({
     name: z.string().min(1, 'Exercise name is required').max(200, 'Exercise name must be less than 200 characters').optional(),
     difficulty: z.enum([EXERCISE_DIFFICULTY.EASY, EXERCISE_DIFFICULTY.MEDIUM, EXERCISE_DIFFICULTY.HARD]).optional(),
     programID: z.number().int().positive('Program ID must be a positive integer').optional()
+})
+
+// Exercise completion tracking schemas
+export const completeExerciseSchema = z.object({
+    exerciseID: z.number().int().positive('Exercise ID must be a positive integer'),
+    duration: z.number().int().min(1, 'Duration must be at least 1 second')
+})
+
+export const updateExerciseCompletionSchema = z.object({
+    completedAt: z.date().optional(),
+    duration: z.number().int().min(1, 'Duration must be at least 1 second').optional()
 })
 
 // User validation schemas
@@ -28,6 +39,8 @@ export const updateUserSchema = z.object({
 // Type inference from schemas
 export type CreateExerciseInput = z.infer<typeof createExerciseSchema>
 export type UpdateExerciseInput = z.infer<typeof updateExerciseSchema>
+export type CompleteExerciseInput = z.infer<typeof completeExerciseSchema>
+export type UpdateExerciseCompletionInput = z.infer<typeof updateExerciseCompletionSchema>
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
 
 // Validation middleware helper

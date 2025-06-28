@@ -5,18 +5,14 @@ import { generateToken } from '../middleware/auth'
 import { validateRequest, registerSchema, loginSchema, RegisterInput, LoginInput } from '../validation/auth'
 import { createErrorResponse } from '../types/response/message'
 import { createAuthSuccessResponse } from '../types/response/auth'
+import { ValidatedRequest } from '../validation/validation-interface'
 
 const router: Router = Router()
 const { User } = models
 
-// Custom interface for requests with validated body
-interface ValidatedRequest<T> extends Request {
-    validatedBody: T
-}
-
 export default () => {
     // User Registration with Zod validation
-    router.post('/register', validateRequest(registerSchema), async (req: ValidatedRequest<RegisterInput>, res: Response, next: NextFunction) => {
+    router.post('/register', validateRequest(registerSchema), async (req: ValidatedRequest<RegisterInput>, res) => {
         try {
             const { name, surname, nickName, email, age, password, role } = req.validatedBody
 
@@ -58,7 +54,7 @@ export default () => {
         }
     })
 
-    router.post('/login', validateRequest(loginSchema), (req: ValidatedRequest<LoginInput>, res: Response, next: NextFunction) => {
+    router.post('/login', validateRequest(loginSchema), (req: ValidatedRequest<LoginInput>, res, next) => {
         passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
             if (err) {
                 return res.status(500).json(createErrorResponse('Login failed'))

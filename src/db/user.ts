@@ -8,6 +8,7 @@ import {
 import bcrypt from 'bcryptjs'
 import { DatabaseModel } from '../types/db'
 import { USER_ROLE } from '../utils/enums'
+import { CompletedExerciseModel } from './completedExercise'
 
 // Password hashing configuration
 const SALT_ROUNDS = 10
@@ -21,6 +22,8 @@ export class UserModel extends DatabaseModel {
     age?: number
     role: USER_ROLE
     password: string
+
+    completedExercises: CompletedExerciseModel[]
 
     // Instance methods
     async comparePassword(candidatePassword: string): Promise<boolean> {
@@ -98,6 +101,16 @@ export default (sequelize: Sequelize) => {
             }
         ]
     })
+
+    UserModel.associate = (models) => {
+        (UserModel as any).hasMany(models.CompletedExercise, {
+            foreignKey: {
+                name: 'userID',
+                allowNull: false
+            },
+            as: 'completedExercises'
+        })
+    }
 
     return UserModel
 } 

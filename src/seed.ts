@@ -1,89 +1,89 @@
-import { models, sequelize } from './db/index'
-import { EXERCISE_DIFFICULTY, USER_ROLE } from './utils/enums'
+import { models, sequelize } from './db'
+import { USER_ROLE, EXERCISE_DIFFICULTY } from './utils/enums'
 
-const {
-	Exercise,
-	Program,
-	User,
-} = models
+const { User, Program, Exercise } = models
 
-const seedDB = async () => {
-	await sequelize.sync({ force: true })
+const seed = async () => {
+	try {
+		// Sync database
+		await sequelize.sync({ force: true })
 
-	// Create users with different field combinations - using individual create to trigger hooks
-	await User.create({
-		name: 'Admin',
-		surname: 'User',
-		nickName: 'admin',
-		email: 'admin@fitness.com',
-		age: 30,
-		role: USER_ROLE.ADMIN,
-		password: 'Admin123!'
-	})
+		// Create users
+		const admin = await User.create({
+			name: 'Admin',
+			surname: 'User',
+			nickName: 'admin',
+			email: 'admin@example.com',
+			age: 30,
+			role: USER_ROLE.ADMIN,
+			password: 'admin123'
+		})
 
-	await User.create({
-		name: 'John',
-		surname: 'Doe',
-		nickName: 'johndoe',
-		email: 'john@fitness.com',
-		age: 25,
-		role: USER_ROLE.USER,
-		password: 'User123!'
-	})
+		const user1 = await User.create({
+			name: 'John',
+			surname: 'Doe',
+			nickName: 'johndoe',
+			email: 'john@example.com',
+			age: 25,
+			role: USER_ROLE.USER,
+			password: 'user123'
+		})
 
-	await User.create({
-		name: 'Jane',
-		email: 'jane@fitness.com',
-		age: 28,
-		role: USER_ROLE.USER,
-		password: 'User123!'
-	})
+		const user2 = await User.create({
+			name: 'Jane',
+			surname: 'Smith',
+			nickName: 'janesmith',
+			email: 'jane@example.com',
+			age: 28,
+			role: USER_ROLE.USER,
+			password: 'user123'
+		})
 
-	await User.create({
-		email: 'minimal@fitness.com',
-		role: USER_ROLE.USER,
-		password: 'Minimal123!'
-	})
+		// Create programs
+		const program1 = await Program.create({
+			name: 'Beginner Workout',
+			description: 'A simple workout for beginners'
+		})
 
-	await Program.bulkCreate([{
-		name: 'Program 1'
-	}, {
-		name: 'Program 2'
-	}, {
-		name: 'Program 3'
-	}] as any[], { returning: true })
+		const program2 = await Program.create({
+			name: 'Advanced Workout',
+			description: 'A challenging workout for experienced users'
+		})
 
-	await Exercise.bulkCreate([{
-		name: 'Exercise 1',
-		difficulty: EXERCISE_DIFFICULTY.EASY,
-		programID: 1
-	}, {
-		name: 'Exercise 2',
-		difficulty: EXERCISE_DIFFICULTY.EASY,
-		programID: 2
-	}, {
-		name: 'Exercise 3',
-		difficulty: EXERCISE_DIFFICULTY.MEDIUM,
-		programID: 1
-	}, {
-		name: 'Exercise 4',
-		difficulty: EXERCISE_DIFFICULTY.MEDIUM,
-		programID: 2
-	}, {
-		name: 'Exercise 5',
-		difficulty: EXERCISE_DIFFICULTY.HARD,
-		programID: 1
-	}, {
-		name: 'Exercise 6',
-		difficulty: EXERCISE_DIFFICULTY.HARD,
-		programID: 2
-	}])
+		// Create exercises
+		await Exercise.create({
+			name: 'Push-ups',
+			difficulty: EXERCISE_DIFFICULTY.EASY,
+			programID: program1.id
+		})
+
+		await Exercise.create({
+			name: 'Squats',
+			difficulty: EXERCISE_DIFFICULTY.EASY,
+			programID: program1.id
+		})
+
+		await Exercise.create({
+			name: 'Pull-ups',
+			difficulty: EXERCISE_DIFFICULTY.HARD,
+			programID: program2.id
+		})
+
+		await Exercise.create({
+			name: 'Burpees',
+			difficulty: EXERCISE_DIFFICULTY.MEDIUM,
+			programID: program2.id
+		})
+
+		console.log('Database seeded successfully!')
+	} catch (error) {
+		console.error('Error seeding database:', error)
+	}
 }
 
-seedDB().then(() => {
-	console.log('DB seed done')
-	process.exit(0)
-}).catch((err) => {
-	console.error('error in seed, check your data and model \n \n', err)
-	process.exit(1)
-})
+// Only close connection if this file is run directly
+if (require.main === module) {
+	seed().finally(() => sequelize.close())
+} else {
+	seed()
+}

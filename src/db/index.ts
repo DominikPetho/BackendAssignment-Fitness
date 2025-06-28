@@ -7,6 +7,7 @@ import { Sequelize } from 'sequelize'
 import defineExercise from './exercise'
 import defineProgram from './program'
 import defineUser from './user'
+import defineCompletedExercise from './completedExercise'
 
 const sequelize: Sequelize = new Sequelize(process.env.DATABASE_URL, {
 	logging: false
@@ -16,9 +17,10 @@ sequelize.authenticate().catch((e: any) => console.error(`Unable to connect to t
 
 const modelsBuilder = (instance: Sequelize) => ({
 	// Import models to sequelize
-	Exercise: instance.import(path.join(__dirname, 'exercise'), defineExercise),
-	Program: instance.import(path.join(__dirname, 'program'), defineProgram),
-	User: instance.import(path.join(__dirname, 'user'), defineUser),
+	Exercise: defineExercise(instance),
+	Program: defineProgram(instance),
+	User: defineUser(instance),
+	CompletedExercise: defineCompletedExercise(instance),
 })
 
 const models = modelsBuilder(sequelize)

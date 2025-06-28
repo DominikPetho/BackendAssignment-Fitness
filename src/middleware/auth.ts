@@ -11,7 +11,7 @@ import { UserModel } from '../db/user'
 const { User } = models
 
 // Custom interface for authenticated requests
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
     user?: UserModel
 }
 
@@ -108,8 +108,5 @@ export const requireRole = (roles: USER_ROLE[]) => {
 
 // Admin-only middleware
 export const requireAdmin = requireRole([USER_ROLE.ADMIN])
-
-// User-only middleware
-export const requireUser = requireRole([USER_ROLE.USER, USER_ROLE.ADMIN])
 
 export default passport 

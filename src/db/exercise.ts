@@ -14,6 +14,7 @@ export class ExerciseModel extends DatabaseModel {
 	id: number
 	difficulty: EXERCISE_DIFFICULTY
 	name: String
+	programID: number
 
 	program: ProgramModel
 }
@@ -31,6 +32,14 @@ export default (sequelize: Sequelize) => {
 		},
 		name: {
 			type: DataTypes.STRING(200),
+		},
+		programID: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			references: {
+				model: 'programs',
+				key: 'id'
+			}
 		}
 	}, {
 		paranoid: true,
@@ -39,8 +48,8 @@ export default (sequelize: Sequelize) => {
 		modelName: 'exercise'
 	})
 
-	ExerciseModel.associate = (models) => {
-		(ExerciseModel as any).belongsTo(models.Program, {
+	ExerciseModel.associate = (models: any) => {
+		ExerciseModel.belongsTo(models.Program, {
 			foreignKey: {
 				name: 'programID',
 				allowNull: false

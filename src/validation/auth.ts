@@ -75,4 +75,17 @@ export const validateRequest = <T>(schema: z.ZodSchema<T>) => {
             return res.status(400).json(createErrorResponse('Validation failed'))
         }
     }
-} 
+}
+
+// Completed exercise validation schemas
+export const completeExerciseSchema = z.object({
+    exerciseID: z.number().int().positive('Exercise ID must be a positive integer'),
+    duration: z.number().int().min(1, 'Duration must be at least 1 second')
+})
+
+export const updateCompletedExerciseSchema = z.object({
+    duration: z.number().int().min(1, 'Duration must be at least 1 second')
+})
+
+export type CompleteExerciseInput = z.infer<typeof completeExerciseSchema>
+export type UpdateCompletedExerciseInput = z.infer<typeof updateCompletedExerciseSchema> 
