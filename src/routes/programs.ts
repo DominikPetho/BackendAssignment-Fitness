@@ -24,29 +24,5 @@ export default () => {
 		return res.json(programs)
 	})
 
-	router.get('/:id', async (req, res) => {
-		try {
-			const { id } = req.params
-
-			const program = await Program.findByPk(id, {
-				include: [{
-					model: Exercise,
-					as: 'exercises',
-					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
-					through: { attributes: [] }
-				}],
-				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-			})
-
-			if (!program) {
-				return res.status(404).json(createErrorResponse('Program not found'))
-			}
-
-			return res.json(program)
-		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to get program'))
-		}
-	})
-
 	return router
 }

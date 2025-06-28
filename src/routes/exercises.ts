@@ -16,21 +16,47 @@ const {
 } = models
 
 export default () => {
-	// Public route - get all exercises
-	router.get('/', async (_, res) => {
-		const exercises = await Exercise.findAll({
-			include: [{
-				model: Program,
-				as: 'programs',
-				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-			}],
-			attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-		})
+	// Public route - get all exercises with optional program filter
+	router.get('/', async (req, res) => {
+		try {
+			const { programID } = req.query
 
-		if (exercises.length === 0) {
-			return res.json(createErrorResponse('No exercises found'))
-		} else {
-			return res.json(exercises)
+			let exercises
+
+			// If programID is provided, filter exercises by that program
+			if (programID) {
+				exercises = await Exercise.findAll({
+					include: [{
+						model: Program,
+						as: 'programs',
+						where: { id: programID },
+						attributes: [], // Exclude all program attributes since we're filtering by program
+						through: { attributes: [] },
+						required: true // This ensures only exercises that belong to the program are returned
+					}],
+					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+				})
+			} else {
+				exercises = await Exercise.findAll({
+					include: [{
+						model: Program,
+						as: 'programs',
+						attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+					}],
+					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+				})
+			}
+
+			if (exercises.length === 0) {
+				const message = programID
+					? `No exercises found for program ${programID}`
+					: 'No exercises found'
+				return res.json(createErrorResponse(message))
+			} else {
+				return res.json(exercises)
+			}
+		} catch (error) {
+			return res.status(500).json(createErrorResponse('Failed to fetch exercises'))
 		}
 	})
 
@@ -212,3 +238,4 @@ export default () => {
 
 	return router
 }
+
