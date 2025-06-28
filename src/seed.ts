@@ -1,13 +1,49 @@
 import { models, sequelize } from './db/index'
-import { EXERCISE_DIFFICULTY } from './utils/enums'
+import { EXERCISE_DIFFICULTY, USER_ROLE } from './utils/enums'
 
 const {
 	Exercise,
 	Program,
+	User,
 } = models
 
 const seedDB = async () => {
 	await sequelize.sync({ force: true })
+
+	// Create users with different field combinations - using individual create to trigger hooks
+	await User.create({
+		name: 'Admin',
+		surname: 'User',
+		nickName: 'admin',
+		email: 'admin@fitness.com',
+		age: 30,
+		role: USER_ROLE.ADMIN,
+		password: 'Admin123!'
+	})
+
+	await User.create({
+		name: 'John',
+		surname: 'Doe',
+		nickName: 'johndoe',
+		email: 'john@fitness.com',
+		age: 25,
+		role: USER_ROLE.USER,
+		password: 'User123!'
+	})
+
+	await User.create({
+		name: 'Jane',
+		email: 'jane@fitness.com',
+		age: 28,
+		role: USER_ROLE.USER,
+		password: 'User123!'
+	})
+
+	await User.create({
+		email: 'minimal@fitness.com',
+		role: USER_ROLE.USER,
+		password: 'Minimal123!'
+	})
 
 	await Program.bulkCreate([{
 		name: 'Program 1'

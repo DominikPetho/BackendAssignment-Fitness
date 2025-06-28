@@ -4,3 +4,9 @@ export enum EXERCISE_DIFFICULTY {
 	MEDIUM = 'MEDIUM',
 	HARD = 'HARD'
 }
+
+// eslint-disable-next-line
+export enum USER_ROLE {
+	ADMIN = 'ADMIN',
+	USER = 'USER'
+}

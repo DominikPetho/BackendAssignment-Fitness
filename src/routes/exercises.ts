@@ -9,7 +9,7 @@ const {
 	Program
 } = models
 
-export default () => {
+export default () => {	
 	router.get('/', async (_req: Request, res: Response, _next: NextFunction) => {
 		const exercises = await Exercise.findAll({
 			include: [{
