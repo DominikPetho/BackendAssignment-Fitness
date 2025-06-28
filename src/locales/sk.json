@@ -1,0 +1,57 @@
+{
+    "translation": {
+        "exercise": {
+            "deleted": "Cvičenie bolo úspešne vymazané",
+            "addedToProgram": "Cvičenie bolo úspešne pridané do programu",
+            "removedFromProgram": "Cvičenie bolo úspešne odstránené z programu",
+            "notFound": "Cvičenie nebolo nájdené",
+            "alreadyExists": "Cvičenie s týmto názvom už existuje",
+            "alreadyInProgram": "Cvičenie je už v tomto programe",
+            "notInProgram": "Cvičenie nie je v tomto programe",
+            "createFailed": "Nepodarilo sa vytvoriť cvičenie",
+            "updateFailed": "Nepodarilo sa aktualizovať cvičenie",
+            "deleteFailed": "Nepodarilo sa vymazať cvičenie",
+            "addToProgramFailed": "Nepodarilo sa pridať cvičenie do programu",
+            "removeFromProgramFailed": "Nepodarilo sa odstrániť cvičenie z programu",
+            "fetchFailed": "Nepodarilo sa načítať cvičenia",
+            "getProgramsFailed": "Nepodarilo sa načítať programy cvičenia"
+        },
+        "completedExercise": {
+            "removed": "Dokončené cvičenie bolo úspešne odstránené",
+            "notFound": "Dokončené cvičenie nebolo nájdené",
+            "removeFailed": "Nepodarilo sa odstrániť dokončené cvičenie",
+            "completeFailed": "Nepodarilo sa dokončiť cvičenie",
+            "fetchFailed": "Nepodarilo sa načítať dokončené cvičenia"
+        },
+        "program": {
+            "created": "Program bol úspešne vytvorený",
+            "updated": "Program bol úspešne aktualizovaný",
+            "deleted": "Program bol úspešne vymazaný",
+            "notFound": "Program nebol nájdený"
+        },
+        "user": {
+            "created": "Používateľ bol úspešne vytvorený",
+            "updated": "Používateľ bol úspešne aktualizovaný",
+            "deleted": "Používateľ bol úspešne vymazaný",
+            "notFound": "Používateľ nebol nájdený",
+            "emailExists": "Používateľ s týmto emailom už existuje",
+            "nicknameExists": "Používateľ s týmto prezývkou už existuje",
+            "fetchFailed": "Nepodarilo sa načítať používateľov",
+            "fetchDetailsFailed": "Nepodarilo sa načítať detaily používateľa",
+            "updateFailed": "Nepodarilo sa aktualizovať používateľa",
+            "profileFetchFailed": "Nepodarilo sa načítať profil"
+        },
+        "auth": {
+            "registered": "Používateľ bol úspešne zaregistrovaný",
+            "loggedIn": "Používateľ bol úspešne prihlásený",
+            "invalidCredentials": "Neplatné prihlasovacie údaje",
+            "registrationFailed": "Registrácia zlyhala",
+            "loginFailed": "Prihlásenie zlyhalo",
+            "invalidEmailOrPassword": "Neplatný email alebo heslo",
+            "authenticationError": "Chyba autentifikácie",
+            "unauthorizedAccess": "Neoprávnený prístup",
+            "authenticationRequired": "Vyžaduje sa autentifikácia",
+            "insufficientPermissions": "Nedostatočné oprávnenia"
+        }
+    }
+}

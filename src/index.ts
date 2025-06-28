@@ -8,11 +8,15 @@ import ExerciseRouter from './routes/exercises'
 import AuthRouter from './routes/auth'
 import UserRouter from './routes/users'
 import UserProfileRouter from './routes/userProfile'
+import { languageMiddleware } from './middleware/language'
 
 const app = express()
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
+
+// Language middleware to detect language from headers
+app.use(languageMiddleware)
 
 // Global middleware to set Content-Type header
 app.use((req, res, next) => {

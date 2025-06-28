@@ -1,8 +1,8 @@
+import i18next from '../../i18n'
+
 // Message types enum
 export enum MessageType {
     ERROR = 'ERROR',
-    INFO = 'INFO',
-    WARNING = 'WARNING',
     SUCCESS = 'SUCCESS'
 }
 
@@ -13,22 +13,12 @@ export interface ResponseMessage {
 }
 
 // Helper functions to create response messages
-export const createErrorResponse = (message: string): ResponseMessage => ({
-    message,
+export const createErrorResponse = (translationKey: string): ResponseMessage => ({
+    message: i18next.t(translationKey),
     type: MessageType.ERROR
 })
 
-export const createInfoResponse = (message: string): ResponseMessage => ({
-    message,
-    type: MessageType.INFO
-})
-
-export const createWarningResponse = (message: string): ResponseMessage => ({
-    message,
-    type: MessageType.WARNING
-})
-
-export const createSuccessResponse = (message: string): ResponseMessage => ({
-    message,
+export const createSuccessResponse = (translationKey: string): ResponseMessage => ({
+    message: i18next.t(translationKey),
     type: MessageType.SUCCESS
 }) 

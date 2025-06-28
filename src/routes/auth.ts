@@ -6,6 +6,7 @@ import { validateRequest, registerSchema, loginSchema, RegisterInput, LoginInput
 import { createErrorResponse } from '../types/response/message'
 import { createAuthSuccessResponse } from '../types/response/auth'
 import { ValidatedRequest } from '../validation/validation-interface'
+import { Op } from 'sequelize'
 
 const router: Router = Router()
 const { User } = models
@@ -16,17 +17,23 @@ export default () => {
         try {
             const { name, surname, nickName, email, age, password, role } = req.validatedBody
 
-            // Check if user already exists
+            // Check if user already exists with same email or nickname
             const existingUser = await User.findOne({
                 where: {
-                    $or: [
-                        { email }
+                    [Op.or]: [
+                        { email },
+                        ...(nickName ? [{ nickName }] : [])
                     ]
                 }
             })
 
             if (existingUser) {
-                return res.status(409).json(createErrorResponse('User with this email already exists'))
+                if (existingUser.email === email) {
+                    return res.status(409).json(createErrorResponse('user.emailExists'))
+                }
+                if (existingUser.nickName === nickName) {
+                    return res.status(409).json(createErrorResponse('user.nicknameExists'))
+                }
             }
 
             // Create new user with validated data
@@ -50,18 +57,20 @@ export default () => {
             // Return success response with user and token
             return res.status(201).json(createAuthSuccessResponse(user, token))
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Registration failed'))
+            return res.status(500).json(createErrorResponse('auth.registrationFailed'))
         }
     })
 
     router.post('/login', validateRequest(loginSchema), (req: ValidatedRequest<LoginInput>, res, next) => {
         passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
             if (err) {
-                return res.status(500).json(createErrorResponse('Login failed'))
+                return res.status(500).json(createErrorResponse('auth.loginFailed'))
             }
 
             if (!user) {
-                return res.status(401).json(createErrorResponse(info?.message || 'Invalid credentials'))
+                // Use the translation key from the passport strategy
+                const errorKey = info?.message || 'auth.invalidCredentials'
+                return res.status(401).json(createErrorResponse(errorKey))
             }
 
             const token = generateToken(user)

@@ -49,13 +49,13 @@ passport.use(new LocalStrategy({
         }) as UserModel | null
 
         if (!user) {
-            return done(null, false, { message: 'Invalid email or password' })
+            return done(null, false, { message: 'auth.invalidEmailOrPassword' })
         }
 
         // Verify password
         const isValidPassword = await user.comparePassword(password)
         if (!isValidPassword) {
-            return done(null, false, { message: 'Invalid email or password' })
+            return done(null, false, { message: 'auth.invalidEmailOrPassword' })
         }
 
         return done(null, user)
@@ -81,10 +81,10 @@ export const generateToken = (user: UserModel): string => {
 export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user: UserModel | false) => {
         if (err) {
-            return res.status(500).json(createErrorResponse('Authentication error'))
+            return res.status(500).json(createErrorResponse('auth.authenticationError'))
         }
         if (!user) {
-            return res.status(401).json(createErrorResponse('Unauthorized access'))
+            return res.status(401).json(createErrorResponse('auth.unauthorizedAccess'))
         }
         req.user = user
         next()
@@ -95,11 +95,11 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 export const requireRole = (roles: USER_ROLE[]) => {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         if (!req.user) {
-            return res.status(401).json(createErrorResponse('Authentication required'))
+            return res.status(401).json(createErrorResponse('auth.authenticationRequired'))
         }
 
         if (!roles.includes(req.user.role)) {
-            return res.status(403).json(createErrorResponse('Insufficient permissions'))
+            return res.status(403).json(createErrorResponse('auth.insufficientPermissions'))
         }
 
         next()

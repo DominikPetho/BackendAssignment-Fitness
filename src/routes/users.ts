@@ -37,7 +37,7 @@ export default () => {
 
             return res.json(users)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to fetch users error: ' + error))
+            return res.status(500).json(createErrorResponse('user.fetchFailed'))
         }
     })
 
@@ -63,12 +63,12 @@ export default () => {
             })
 
             if (!user) {
-                return res.status(404).json(createErrorResponse('User not found'))
+                return res.status(404).json(createErrorResponse('user.notFound'))
             }
 
             return res.json(user)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to fetch user details'))
+            return res.status(500).json(createErrorResponse('user.fetchDetailsFailed'))
         }
     })
 
@@ -80,7 +80,7 @@ export default () => {
 
             const user = await User.findByPk(id)
             if (!user) {
-                return res.status(404).json(createErrorResponse('User not found'))
+                return res.status(404).json(createErrorResponse('user.notFound'))
             }
 
             // Check if nickName is being updated and if it's already taken by another user
@@ -89,7 +89,7 @@ export default () => {
                     where: { nickName }
                 })
                 if (existingUser) {
-                    return res.status(409).json(createErrorResponse('Nickname already exists'))
+                    return res.status(409).json(createErrorResponse('user.nicknameExists'))
                 }
             }
 
@@ -110,7 +110,7 @@ export default () => {
 
             return res.json(updatedUser)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to update user'))
+            return res.status(500).json(createErrorResponse('user.updateFailed'))
         }
     })
 

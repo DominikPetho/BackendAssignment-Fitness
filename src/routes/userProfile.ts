@@ -5,7 +5,7 @@ import { validateRequest } from '../validation/admin'
 import { completeExerciseSchema, updateCompletedExerciseSchema } from '../validation/auth'
 import { ValidatedRequest } from '../validation/validation-interface'
 import { CompleteExerciseInput, UpdateCompletedExerciseInput } from '../validation/auth'
-import { createErrorResponse } from '../types/response/message'
+import { createErrorResponse, createSuccessResponse } from '../types/response/message'
 import { models } from '../db'
 import { AuthenticatedRequest } from '../middleware/auth'
 import { UserModel } from '../db/user'
@@ -22,12 +22,12 @@ export default () => {
             })
 
             if (!user) {
-                return res.status(404).json(createErrorResponse('User not found'))
+                return res.status(404).json(createErrorResponse('user.notFound'))
             }
 
             return res.json(user)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to retrieve profile'))
+            return res.status(500).json(createErrorResponse('user.profileFetchFailed'))
         }
     })
 
@@ -44,7 +44,7 @@ export default () => {
                 // Check if exercise exists
                 const exercise = await Exercise.findByPk(exerciseID)
                 if (!exercise) {
-                    return res.status(404).json(createErrorResponse('Exercise not found'))
+                    return res.status(404).json(createErrorResponse('exercise.notFound'))
                 }
 
                 // Create a new completed exercise record
@@ -57,7 +57,7 @@ export default () => {
 
                 return res.status(201).json(completedExercise)
             } catch (error) {
-                return res.status(500).json(createErrorResponse('Failed to complete exercise'))
+                return res.status(500).json(createErrorResponse('completedExercise.completeFailed'))
             }
         })
 
@@ -80,7 +80,7 @@ export default () => {
 
             return res.json(completedExercises)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to retrieve completed exercises'))
+            return res.status(500).json(createErrorResponse('completedExercise.fetchFailed'))
         }
     })
 
@@ -95,16 +95,14 @@ export default () => {
             })
 
             if (!completedExercise) {
-                return res.status(404).json(createErrorResponse('Completed exercise not found'))
+                return res.status(404).json(createErrorResponse('completedExercise.notFound'))
             }
 
             await completedExercise.destroy()
 
-            return res.json({
-                message: 'Completed exercise removed successfully'
-            })
+            return res.json(createSuccessResponse('completedExercise.removed'))
         } catch (error) {
-            return res.status(500).json(createErrorResponse('Failed to remove completed exercise'))
+            return res.status(500).json(createErrorResponse('completedExercise.removeFailed'))
         }
     })
 

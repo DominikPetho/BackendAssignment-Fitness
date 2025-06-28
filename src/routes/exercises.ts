@@ -129,7 +129,7 @@ export default () => {
 				return res.json(response)
 			}
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to fetch exercises'))
+			return res.status(500).json(createErrorResponse('exercise.fetchFailed'))
 		}
 	})
 
@@ -148,12 +148,12 @@ export default () => {
 			})
 
 			if (!exercise) {
-				return res.status(404).json(createErrorResponse('Exercise not found'))
+				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
 			return res.json(exercise.programs)
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to get exercise programs'))
+			return res.status(500).json(createErrorResponse('exercise.getProgramsFailed'))
 		}
 	})
 
@@ -167,7 +167,7 @@ export default () => {
 			// Check if exercise with same name already exists
 			const existingExercise = await Exercise.findOne({ where: { name } })
 			if (existingExercise) {
-				return res.status(400).json(createErrorResponse('Exercise with this name already exists'))
+				return res.status(400).json(createErrorResponse('exercise.alreadyExists'))
 			}
 
 			const exercise = await Exercise.create({
@@ -184,7 +184,7 @@ export default () => {
 
 			return res.status(201).json(exercise)
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to create exercise'))
+			return res.status(500).json(createErrorResponse('exercise.createFailed'))
 		}
 	})
 
@@ -196,7 +196,7 @@ export default () => {
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
-				return res.status(404).json(createErrorResponse('Exercise not found'))
+				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
 			// If name is being updated, check for duplicates
@@ -208,7 +208,7 @@ export default () => {
 					}
 				})
 				if (existingExercise) {
-					return res.status(400).json(createErrorResponse('Exercise with this name already exists'))
+					return res.status(400).json(createErrorResponse('exercise.alreadyExists'))
 				}
 			}
 
@@ -219,7 +219,7 @@ export default () => {
 
 			return res.json(exercise)
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to update exercise'))
+			return res.status(500).json(createErrorResponse('exercise.updateFailed'))
 		}
 	})
 
@@ -230,14 +230,14 @@ export default () => {
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
-				return res.status(404).json(createErrorResponse('Exercise not found'))
+				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
 			await exercise.destroy()
 
-			return res.json(createSuccessResponse('Exercise deleted successfully'))
+			return res.json(createSuccessResponse('exercise.deleted'))
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to delete exercise'))
+			return res.status(500).json(createErrorResponse('exercise.deleteFailed'))
 		}
 	})
 
@@ -249,12 +249,12 @@ export default () => {
 
 			const exercise = await Exercise.findByPk(id)
 			if (!exercise) {
-				return res.status(404).json(createErrorResponse('Exercise not found'))
+				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
 			const program = await Program.findByPk(programID)
 			if (!program) {
-				return res.status(404).json(createErrorResponse('Program not found'))
+				return res.status(404).json(createErrorResponse('program.notFound'))
 			}
 
 			// Check if the association already exists
@@ -266,7 +266,7 @@ export default () => {
 			})
 
 			if (existingAssociation) {
-				return res.status(400).json(createErrorResponse('Exercise is already in this program'))
+				return res.status(400).json(createErrorResponse('exercise.alreadyInProgram'))
 			}
 
 			await ProgramWithExercise.create({
@@ -274,9 +274,9 @@ export default () => {
 				programID: programID
 			})
 
-			return res.json(createSuccessResponse('Exercise added to program successfully'))
+			return res.json(createSuccessResponse('exercise.addedToProgram'))
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to add exercise to program'))
+			return res.status(500).json(createErrorResponse('exercise.addToProgramFailed'))
 		}
 	})
 
@@ -287,7 +287,7 @@ export default () => {
 
 			const exercise = await Exercise.findByPk(exerciseId)
 			if (!exercise) {
-				return res.status(404).json(createErrorResponse('Exercise not found'))
+				return res.status(404).json(createErrorResponse('exercise.notFound'))
 			}
 
 			// Find and delete the association
@@ -299,14 +299,14 @@ export default () => {
 			})
 
 			if (!association) {
-				return res.status(404).json(createErrorResponse('Exercise is not in this program'))
+				return res.status(404).json(createErrorResponse('exercise.notInProgram'))
 			}
 
 			await association.destroy()
 
-			return res.json(createSuccessResponse('Exercise removed from program successfully'))
+			return res.json(createSuccessResponse('exercise.removedFromProgram'))
 		} catch (error) {
-			return res.status(500).json(createErrorResponse('Failed to remove exercise from program'))
+			return res.status(500).json(createErrorResponse('exercise.removeFromProgramFailed'))
 		}
 	})
 

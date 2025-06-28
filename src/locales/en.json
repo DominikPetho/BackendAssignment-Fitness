@@ -1,0 +1,57 @@
+{
+    "translation": {
+        "exercise": {
+            "deleted": "Exercise deleted successfully",
+            "addedToProgram": "Exercise added to program successfully",
+            "removedFromProgram": "Exercise removed from program successfully",
+            "notFound": "Exercise not found",
+            "alreadyExists": "Exercise with this name already exists",
+            "alreadyInProgram": "Exercise is already in this program",
+            "notInProgram": "Exercise is not in this program",
+            "createFailed": "Failed to create exercise",
+            "updateFailed": "Failed to update exercise",
+            "deleteFailed": "Failed to delete exercise",
+            "addToProgramFailed": "Failed to add exercise to program",
+            "removeFromProgramFailed": "Failed to remove exercise from program",
+            "fetchFailed": "Failed to fetch exercises",
+            "getProgramsFailed": "Failed to get exercise programs"
+        },
+        "completedExercise": {
+            "removed": "Completed exercise removed successfully",
+            "notFound": "Completed exercise not found",
+            "removeFailed": "Failed to remove completed exercise",
+            "completeFailed": "Failed to complete exercise",
+            "fetchFailed": "Failed to retrieve completed exercises"
+        },
+        "program": {
+            "created": "Program created successfully",
+            "updated": "Program updated successfully",
+            "deleted": "Program deleted successfully",
+            "notFound": "Program not found"
+        },
+        "user": {
+            "created": "User created successfully",
+            "updated": "User updated successfully",
+            "deleted": "User deleted successfully",
+            "notFound": "User not found",
+            "emailExists": "User with this email already exists",
+            "nicknameExists": "User with this nickname already exists",
+            "fetchFailed": "Failed to fetch users",
+            "fetchDetailsFailed": "Failed to fetch user details",
+            "updateFailed": "Failed to update user",
+            "profileFetchFailed": "Failed to retrieve profile"
+        },
+        "auth": {
+            "registered": "User registered successfully",
+            "loggedIn": "User logged in successfully",
+            "invalidCredentials": "Invalid credentials",
+            "registrationFailed": "Registration failed",
+            "loginFailed": "Login failed",
+            "invalidEmailOrPassword": "Invalid email or password",
+            "authenticationError": "Authentication error",
+            "unauthorizedAccess": "Unauthorized access",
+            "authenticationRequired": "Authentication required",
+            "insufficientPermissions": "Insufficient permissions"
+        }
+    }
+}
