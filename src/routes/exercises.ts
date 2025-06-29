@@ -216,18 +216,16 @@ export default () => {
 	})
 
 	// Remove exercise from program
-	router.delete('/', authenticateJWT, requireAdmin, async (req, res) => {
+	router.post('/remove-from-program', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
 			const { exerciseID, programID } = req.query
 
-			console.log('exerciseID', exerciseID)
-			console.log('programID', programID)
 			const exercise = await Exercise.findByPk(exerciseID as string)
 			if (!exercise) {
 				return res.status(404).sendError('exercise.notFound')
 			}
 
-			// Find and delete the association
+			// Find the association
 			const association = await ProgramWithExercise.findOne({
 				where: {
 					exerciseID: exerciseID,
@@ -237,6 +235,15 @@ export default () => {
 
 			if (!association) {
 				return res.status(404).sendError('exercise.notInProgram')
+			}
+
+			// Check if there are any completed exercises for this exercise
+			const completedExercises = await CompletedExercise.findOne({
+				where: { exerciseID: exerciseID as string }
+			})
+
+			if (completedExercises) {
+				return res.status(400).sendError('exercise.cannotDeleteWithCompleted')
 			}
 
 			await association.destroy()

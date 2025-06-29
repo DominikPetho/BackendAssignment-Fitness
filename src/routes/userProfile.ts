@@ -11,7 +11,7 @@ import { AuthenticatedRequest } from '../middleware/auth'
 import { UserModel } from '../db/user'
 
 const router = express.Router()
-const { User, Exercise, CompletedExercise } = models
+const { User, Exercise, CompletedExercise, ProgramWithExercise } = models
 
 export default () => {
     router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res) => {
@@ -45,6 +45,15 @@ export default () => {
                 const exercise = await Exercise.findByPk(exerciseID)
                 if (!exercise) {
                     return res.status(404).sendError('exercise.notFound')
+                }
+
+                // Check if exercise is part of any program
+                const exerciseInProgram = await ProgramWithExercise.findOne({
+                    where: { exerciseID }
+                })
+
+                if (!exerciseInProgram) {
+                    return res.status(400).sendError('exercise.notInProgram')
                 }
 
                 // Create a new completed exercise record
