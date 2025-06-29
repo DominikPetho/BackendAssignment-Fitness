@@ -153,3 +153,518 @@ response status code >= 500
 }
 ```
 
+***
+
+## API Documentation
+
+### Authentication
+
+All protected endpoints require a JWT token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Language Support
+
+Set the `Accept-Language` header to receive localized responses:
+- `Accept-Language: en` (English - default)
+- `Accept-Language: sk` (Slovak)
+
+### Error Response Format
+
+```json
+{
+  "message": "Localized error message",
+  "type": "ERROR",
+  "error": "Optional error details"
+}
+```
+
+---
+
+## Authentication Endpoints
+
+### POST /auth/register
+**Description**: Register a new user account
+
+**Request Body**:
+```json
+{
+  "name": "John",
+  "surname": "Doe", 
+  "nickName": "johndoe",
+  "email": "john@example.com",
+  "age": 25,
+  "password": "SecurePass123!",
+  "role": "USER"
+}
+```
+
+**Response** (201):
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John",
+    "surname": "Doe",
+    "nickName": "johndoe",
+    "email": "john@example.com",
+    "age": 25,
+    "role": "USER"
+  },
+  "token": "jwt-token-here"
+}
+```
+
+**Validation Rules**:
+- Email must be valid format
+- Password: min 8 chars, uppercase, number, special character
+- Age: 1-120 (optional)
+- Role: "ADMIN" or "USER"
+
+---
+
+### POST /auth/login
+**Description**: Login with email and password
+
+**Request Body**:
+```json
+{
+  "email": "john@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response** (200):
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John",
+    "surname": "Doe",
+    "nickName": "johndoe",
+    "email": "john@example.com",
+    "age": 25,
+    "role": "USER"
+  },
+  "token": "jwt-token-here"
+}
+```
+
+---
+
+## Public Endpoints
+
+### GET /exercises
+**Description**: Get all exercises with optional filtering, search, and pagination
+
+**Query Parameters**:
+- `programID` (optional): Filter exercises by program ID
+- `search` (optional): Search exercises by name (case-insensitive)
+- `page` (optional): Page number for pagination
+- `limit` (optional): Number of items per page (max 50)
+
+**Examples**:
+```
+GET /exercises
+GET /exercises?programID=1
+GET /exercises?search=push
+GET /exercises?page=1&limit=10
+GET /exercises?programID=1&search=push&page=1&limit=5
+```
+
+**Response** (200):
+```json
+{
+  "exercises": [
+    {
+      "id": 1,
+      "name": "Push-ups",
+      "difficulty": "MEDIUM",
+      "programs": [
+        {
+          "id": 1,
+          "name": "Strength Training"
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalItems": 50,
+    "hasNextPage": true
+  }
+}
+```
+
+---
+
+### GET /programs
+**Description**: Get all programs with their exercises
+
+**Response** (200):
+```json
+[
+  {
+    "id": 1,
+    "name": "Strength Training",
+    "exercises": [
+      {
+        "id": 1,
+        "name": "Push-ups",
+        "difficulty": "MEDIUM"
+      }
+    ]
+  }
+]
+```
+
+---
+
+## Admin-Only Endpoints
+
+### POST /exercises
+**Description**: Create a new exercise (ADMIN only)
+
+**Request Body**:
+```json
+{
+  "name": "Squats",
+  "difficulty": "HARD"
+}
+```
+
+**Response** (201):
+```json
+{
+  "id": 2,
+  "name": "Squats",
+  "difficulty": "HARD"
+}
+```
+
+---
+
+### PATCH /exercises/:id
+**Description**: Update an existing exercise (ADMIN only)
+
+**Request Body**:
+```json
+{
+  "name": "Modified Squats",
+  "difficulty": "MEDIUM"
+}
+```
+
+**Response** (200):
+```json
+{
+  "id": 2,
+  "name": "Modified Squats",
+  "difficulty": "MEDIUM"
+}
+```
+
+---
+
+### DELETE /exercises/:id
+**Description**: Delete an exercise (ADMIN only)
+
+**Response** (200):
+```json
+{
+  "message": "Exercise deleted successfully",
+  "type": "SUCCESS"
+}
+```
+
+---
+
+### POST /exercises/assign-to-program
+**Description**: Add an exercise to a program (ADMIN only)
+
+**Request Body**:
+```json
+{
+  "exerciseID": 1,
+  "programID": 2
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "Exercise added to program successfully",
+  "type": "SUCCESS"
+}
+```
+
+---
+
+### POST /exercises/remove-from-program
+**Description**: Remove an exercise from a program (ADMIN only)
+
+**Query Parameters**:
+- `exerciseID`: ID of the exercise
+- `programID`: ID of the program
+
+**Example**:
+```
+POST /exercises/remove-from-program?exerciseID=1&programID=2
+```
+
+**Response** (200):
+```json
+{
+  "message": "Exercise removed from program successfully",
+  "type": "SUCCESS"
+}
+```
+
+**Note**: Cannot remove if exercise has completed exercises.
+
+---
+
+### GET /users
+**Description**: Get all users (ADMIN sees all data, USER sees only id and nickName)
+
+**Response** (200) - ADMIN:
+```json
+[
+  {
+    "id": 1,
+    "name": "John",
+    "surname": "Doe",
+    "nickName": "johndoe",
+    "email": "john@example.com",
+    "age": 25,
+    "role": "USER",
+    "completedExercises": [
+      {
+        "id": 1,
+        "completedAt": "2024-01-15T10:30:00.000Z",
+        "duration": 300,
+        "exercise": {
+          "id": 1,
+          "name": "Push-ups",
+          "difficulty": "MEDIUM"
+        },
+        "program": {
+          "id": 1,
+          "name": "Strength Training"
+        }
+      }
+    ]
+  }
+]
+```
+
+**Response** (200) - USER:
+```json
+[
+  {
+    "id": 1,
+    "nickName": "johndoe"
+  }
+]
+```
+
+---
+
+### GET /users/:id
+**Description**: Get detailed user information (ADMIN only)
+
+**Response** (200):
+```json
+{
+  "id": 1,
+  "name": "John",
+  "surname": "Doe",
+  "nickName": "johndoe",
+  "email": "john@example.com",
+  "age": 25,
+  "role": "USER",
+  "completedExercises": [
+    {
+      "id": 1,
+      "completedAt": "2024-01-15T10:30:00.000Z",
+      "duration": 300,
+      "exercise": {
+        "id": 1,
+        "name": "Push-ups",
+        "difficulty": "MEDIUM"
+      },
+      "program": {
+        "id": 1,
+        "name": "Strength Training"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### PATCH /users/:id
+**Description**: Update user information (ADMIN only)
+
+**Request Body**:
+```json
+{
+  "name": "Jane",
+  "surname": "Smith",
+  "nickName": "janesmith",
+  "age": 30,
+  "role": "ADMIN"
+}
+```
+
+**Response** (200):
+```json
+{
+  "id": 1,
+  "name": "Jane",
+  "surname": "Smith",
+  "nickName": "janesmith",
+  "email": "john@example.com",
+  "age": 30,
+  "role": "ADMIN"
+}
+```
+
+---
+
+## User Profile Endpoints
+
+### GET /user-profile
+**Description**: Get current user's profile information
+
+**Response** (200):
+```json
+{
+  "id": 1,
+  "name": "John",
+  "surname": "Doe",
+  "nickName": "johndoe",
+  "email": "john@example.com",
+  "age": 25,
+  "role": "USER"
+}
+```
+
+---
+
+### POST /user-profile/complete-exercise
+**Description**: Mark an exercise as completed for a specific program
+
+**Request Body**:
+```json
+{
+  "exerciseID": 1,
+  "programID": 2,
+  "duration": 300
+}
+```
+
+**Response** (201):
+```json
+{
+  "id": 1,
+  "userID": 1,
+  "exerciseID": 1,
+  "programID": 2,
+  "completedAt": "2024-01-15T10:30:00.000Z",
+  "duration": 300
+}
+```
+
+**Note**: Exercise must be part of the specified program.
+
+---
+
+### GET /user-profile/completed-exercises
+**Description**: Get list of user's completed exercises
+
+**Response** (200):
+```json
+[
+  {
+    "id": 1,
+    "userID": 1,
+    "completedAt": "2024-01-15T10:30:00.000Z",
+    "duration": 300,
+    "exercise": {
+      "id": 1,
+      "name": "Push-ups",
+      "difficulty": "MEDIUM"
+    },
+    "program": {
+      "id": 2,
+      "name": "Beginner Workout"
+    }
+  }
+]
+```
+
+---
+
+### DELETE /user-profile/completed-exercises/:id
+**Description**: Remove a completed exercise from user's history
+
+**Response** (200):
+```json
+{
+  "message": "Completed exercise removed successfully",
+  "type": "SUCCESS"
+}
+```
+
+---
+
+## Status Codes
+
+- **200**: Success
+- **201**: Created
+- **400**: Bad Request (validation errors)
+- **401**: Unauthorized (missing or invalid token)
+- **403**: Forbidden (insufficient permissions)
+- **404**: Not Found
+- **409**: Conflict (duplicate data)
+- **500**: Internal Server Error
+
+## Validation Rules
+
+### User Registration/Update
+- Email: Valid email format
+- Password: Min 8 characters, uppercase, number, special character
+- Age: 1-120 (optional)
+- Role: "ADMIN" or "USER"
+- Nickname: Unique across users
+
+### Exercise Creation/Update
+- Name: 1-200 characters, unique
+- Difficulty: "EASY", "MEDIUM", or "HARD"
+
+### Exercise Completion
+- ExerciseID: Must exist and be part of specified program
+- ProgramID: Must exist
+- Duration: Min 1 second
+
+## Localization
+
+The API supports English (en) and Slovak (sk) languages. Set the `Accept-Language` header to receive localized error messages and success responses.
+
+Example with Slovak:
+```
+Accept-Language: sk
+```
+
+Response:
+```json
+{
+  "message": "Cvičenie bolo úspešne vymazané",
+  "type": "SUCCESS"
+}
+```
+
