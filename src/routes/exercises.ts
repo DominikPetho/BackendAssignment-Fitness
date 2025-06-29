@@ -70,36 +70,12 @@ export default () => {
 		}
 	})
 
-	// Public route - get all programs for a specific exercise
-	router.get('/:id/programs', async (req, res) => {
-		try {
-			const { id } = req.params
-
-			const exercise = await Exercise.findByPk(id, {
-				include: [{
-					model: Program,
-					as: 'programs',
-					attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-				}],
-				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
-			})
-
-			if (!exercise) {
-				return res.status(404).sendError('exercise.notFound')
-			}
-
-			return res.json(exercise.programs)
-		} catch (error) {
-			return res.status(500).sendError('exercise.getProgramsFailed')
-		}
-	})
-
 	// ADMIN ONLY ROUTES
 
 	// Create exercise
 	router.post('/', authenticateJWT, requireAdmin, validateRequest(createExerciseSchema), async (req: ValidatedRequest<CreateExerciseInput>, res) => {
 		try {
-			const { name, difficulty, programID } = req.validatedBody
+			const { name, difficulty } = req.validatedBody
 
 			// Check if exercise with same name already exists
 			const existingExercise = await Exercise.findOne({ where: { name } })
@@ -111,13 +87,6 @@ export default () => {
 				name,
 				difficulty
 			})
-
-			if (programID) {
-				await ProgramWithExercise.create({
-					programID,
-					exerciseID: exercise.id
-				})
-			}
 
 			return res.status(201).json(exercise)
 		} catch (error) {
