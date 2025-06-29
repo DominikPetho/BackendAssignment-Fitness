@@ -10,6 +10,7 @@ export enum MessageType {
 export interface ResponseMessage {
     message: string
     type: MessageType
+    error?: string
 }
 
 // Helper functions to create response messages

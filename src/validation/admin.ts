@@ -1,6 +1,6 @@
 import * as z from 'zod'
 import { USER_ROLE, EXERCISE_DIFFICULTY } from '../utils/enums'
-import { createErrorResponse } from '../types/response/message'
+import { Request, Response, NextFunction } from 'express'
 
 // Exercise validation schemas
 export const createExerciseSchema = z.object({
@@ -52,9 +52,11 @@ export const validateRequest = <T>(schema: z.ZodSchema<T>) => {
         } catch (error) {
             if (error instanceof z.ZodError) {
                 const errorMessage = error.errors.map((err: any) => err.message).join(', ')
-                return res.status(400).json(createErrorResponse(errorMessage))
+                if (errorMessage) {
+                    return res.status(400).sendError(errorMessage)
+                }
             }
-            return res.status(400).json(createErrorResponse('Validation failed'))
+            return res.status(400).sendError('validation.failed')
         }
     }
 } 

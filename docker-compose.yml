@@ -13,7 +13,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-    command: sh -c "npm run seed && npm start"
+    command: sh -c "npm run seed && npm run dev"
 
   db:
     image: postgres:11.5

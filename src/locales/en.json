@@ -1,5 +1,8 @@
 {
     "translation": {
+        "validation": {
+            "failed": "Validation failed"
+        },
         "exercise": {
             "deleted": "Exercise deleted successfully",
             "addedToProgram": "Exercise added to program successfully",

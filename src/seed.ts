@@ -16,7 +16,7 @@ const seed = async () => {
 			email: 'admin@example.com',
 			age: 30,
 			role: USER_ROLE.ADMIN,
-			password: 'admin123'
+			password: 'Admin123!'
 		})
 
 		const user1 = await User.create({
@@ -26,7 +26,7 @@ const seed = async () => {
 			email: 'john@example.com',
 			age: 25,
 			role: USER_ROLE.USER,
-			password: 'user123'
+			password: 'User123!'
 		})
 
 		const user2 = await User.create({
@@ -36,7 +36,7 @@ const seed = async () => {
 			email: 'jane@example.com',
 			age: 28,
 			role: USER_ROLE.USER,
-			password: 'user123'
+			password: 'User123!'
 		})
 
 		// Create programs

@@ -11,6 +11,9 @@ RUN npm i
 # Copy source code
 COPY . .
 
+# Create logs directory
+RUN mkdir -p logs
+
 # Expose port
 EXPOSE 8000
 

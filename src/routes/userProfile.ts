@@ -3,9 +3,9 @@ import { Op } from 'sequelize'
 import { authenticateJWT } from '../middleware/auth'
 import { validateRequest } from '../validation/admin'
 import { completeExerciseSchema, updateCompletedExerciseSchema } from '../validation/auth'
-import { ValidatedRequest } from '../validation/validation-interface'
+import { ValidatedRequest } from '../validation/validationInterface'
 import { CompleteExerciseInput, UpdateCompletedExerciseInput } from '../validation/auth'
-import { createErrorResponse, createSuccessResponse } from '../types/response/message'
+import { createSuccessResponse } from '../types/response/message'
 import { models } from '../db'
 import { AuthenticatedRequest } from '../middleware/auth'
 import { UserModel } from '../db/user'
@@ -22,12 +22,12 @@ export default () => {
             })
 
             if (!user) {
-                return res.status(404).json(createErrorResponse('user.notFound'))
+                return res.status(404).sendError('user.notFound')
             }
 
             return res.json(user)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('user.profileFetchFailed'))
+            return res.status(500).sendError('user.profileFetchFailed')
         }
     })
 
@@ -44,7 +44,7 @@ export default () => {
                 // Check if exercise exists
                 const exercise = await Exercise.findByPk(exerciseID)
                 if (!exercise) {
-                    return res.status(404).json(createErrorResponse('exercise.notFound'))
+                    return res.status(404).sendError('exercise.notFound')
                 }
 
                 // Create a new completed exercise record
@@ -57,7 +57,7 @@ export default () => {
 
                 return res.status(201).json(completedExercise)
             } catch (error) {
-                return res.status(500).json(createErrorResponse('completedExercise.completeFailed'))
+                return res.status(500).sendError('completedExercise.completeFailed')
             }
         })
 
@@ -80,7 +80,7 @@ export default () => {
 
             return res.json(completedExercises)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('completedExercise.fetchFailed'))
+            return res.status(500).sendError('completedExercise.fetchFailed')
         }
     })
 
@@ -95,14 +95,14 @@ export default () => {
             })
 
             if (!completedExercise) {
-                return res.status(404).json(createErrorResponse('completedExercise.notFound'))
+                return res.status(404).sendError('completedExercise.notFound')
             }
 
             await completedExercise.destroy()
 
             return res.json(createSuccessResponse('completedExercise.removed'))
         } catch (error) {
-            return res.status(500).json(createErrorResponse('completedExercise.removeFailed'))
+            return res.status(500).sendError('completedExercise.removeFailed')
         }
     })
 

@@ -5,7 +5,7 @@ import { createErrorResponse } from '../types/response/message'
 import { validateRequest, updateUserSchema, UpdateUserInput } from '../validation/admin'
 import { AuthenticatedRequest } from '../middleware/auth'
 import { USER_ROLE } from '../utils/enums'
-import { ValidatedRequest } from '../validation/validation-interface'
+import { ValidatedRequest } from '../validation/validationInterface'
 
 const router: Router = Router()
 
@@ -37,7 +37,7 @@ export default () => {
 
             return res.json(users)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('user.fetchFailed'))
+            return res.status(500).sendError('user.fetchFailed')
         }
     })
 
@@ -63,12 +63,12 @@ export default () => {
             })
 
             if (!user) {
-                return res.status(404).json(createErrorResponse('user.notFound'))
+                return res.status(404).sendError('user.notFound')
             }
 
             return res.json(user)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('user.fetchDetailsFailed'))
+            return res.status(500).sendError('user.fetchDetailsFailed')
         }
     })
 
@@ -80,7 +80,7 @@ export default () => {
 
             const user = await User.findByPk(id)
             if (!user) {
-                return res.status(404).json(createErrorResponse('user.notFound'))
+                return res.status(404).sendError('user.notFound')
             }
 
             // Check if nickName is being updated and if it's already taken by another user
@@ -89,7 +89,7 @@ export default () => {
                     where: { nickName }
                 })
                 if (existingUser) {
-                    return res.status(409).json(createErrorResponse('user.nicknameExists'))
+                    return res.status(409).sendError('user.nicknameExists')
                 }
             }
 
@@ -110,7 +110,7 @@ export default () => {
 
             return res.json(updatedUser)
         } catch (error) {
-            return res.status(500).json(createErrorResponse('user.updateFailed'))
+            return res.status(500).sendError('user.updateFailed')
         }
     })
 

@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
 import { models } from '../db'
 import { USER_ROLE } from '../utils/enums'
-import { createErrorResponse } from '../types/response/message'
 import { UserModel } from '../db/user'
 
 const { User } = models
@@ -27,6 +26,10 @@ passport.use(new JwtStrategy({
     try {
         const user = await User.findByPk(payload.id) as UserModel | null
         if (user) {
+            // Validate that the email in token matches user's current email        
+            if (user.email !== payload.email) {
+                return done(null, false)
+            }
             return done(null, user)
         }
         return done(null, false)
@@ -81,11 +84,12 @@ export const generateToken = (user: UserModel): string => {
 export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user: UserModel | false) => {
         if (err) {
-            return res.status(500).json(createErrorResponse('auth.authenticationError'))
+            return res.status(500).sendError('auth.authenticationError',)
         }
         if (!user) {
-            return res.status(401).json(createErrorResponse('auth.unauthorizedAccess'))
+            return res.status(401).sendError('auth.unauthorizedAccess')
         }
+
         req.user = user
         next()
     })(req, res, next)
@@ -95,11 +99,13 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 export const requireRole = (roles: USER_ROLE[]) => {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         if (!req.user) {
-            return res.status(401).json(createErrorResponse('auth.authenticationRequired'))
+            res.status(401)
+            return res.sendError('auth.authenticationRequired')
         }
 
         if (!roles.includes(req.user.role)) {
-            return res.status(403).json(createErrorResponse('auth.insufficientPermissions'))
+            res.status(403)
+            return res.sendError('auth.insufficientPermissions')
         }
 
         next()

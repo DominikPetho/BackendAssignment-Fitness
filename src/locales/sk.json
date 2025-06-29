@@ -1,5 +1,8 @@
 {
     "translation": {
+        "validation": {
+            "failed": "Validácia zlyhala"
+        },
         "exercise": {
             "deleted": "Cvičenie bolo úspešne vymazané",
             "addedToProgram": "Cvičenie bolo úspešne pridané do programu",

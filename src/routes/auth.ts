@@ -3,9 +3,8 @@ import passport from 'passport'
 import { models } from '../db'
 import { generateToken } from '../middleware/auth'
 import { validateRequest, registerSchema, loginSchema, RegisterInput, LoginInput } from '../validation/auth'
-import { createErrorResponse } from '../types/response/message'
 import { createAuthSuccessResponse } from '../types/response/auth'
-import { ValidatedRequest } from '../validation/validation-interface'
+import { ValidatedRequest } from '../validation/validationInterface'
 import { Op } from 'sequelize'
 
 const router: Router = Router()
@@ -29,10 +28,10 @@ export default () => {
 
             if (existingUser) {
                 if (existingUser.email === email) {
-                    return res.status(409).json(createErrorResponse('user.emailExists'))
+                    return res.status(409).sendError('user.emailExists')
                 }
                 if (existingUser.nickName === nickName) {
-                    return res.status(409).json(createErrorResponse('user.nicknameExists'))
+                    return res.status(409).sendError('user.nicknameExists')
                 }
             }
 
@@ -57,20 +56,20 @@ export default () => {
             // Return success response with user and token
             return res.status(201).json(createAuthSuccessResponse(user, token))
         } catch (error) {
-            return res.status(500).json(createErrorResponse('auth.registrationFailed'))
+            return res.status(500).sendError('auth.registrationFailed')
         }
     })
 
     router.post('/login', validateRequest(loginSchema), (req: ValidatedRequest<LoginInput>, res, next) => {
         passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
             if (err) {
-                return res.status(500).json(createErrorResponse('auth.loginFailed'))
+                return res.status(500).sendError('auth.loginFailed')
             }
 
             if (!user) {
                 // Use the translation key from the passport strategy
                 const errorKey = info?.message || 'auth.invalidCredentials'
-                return res.status(401).json(createErrorResponse(errorKey))
+                return res.status(401).sendError(errorKey)
             }
 
             const token = generateToken(user)
