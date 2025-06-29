@@ -5,6 +5,7 @@ import { authenticateJWT, requireAdmin } from '../middleware/auth'
 import { createSuccessResponse } from '../types/response/message'
 import { validateRequest, createExerciseSchema, updateExerciseSchema, CreateExerciseInput, UpdateExerciseInput } from '../validation/admin'
 import { ValidatedRequest } from '../validation/validationInterface'
+import i18next from '../i18n'
 
 const router: Router = Router()
 
@@ -17,72 +18,6 @@ const {
 } = models
 
 export default () => {
-	// Helper function to build pagination options
-	const buildPaginationOptions = (page?: string, limit?: string) => {
-		// If neither page nor limit is provided, return null to indicate no pagination
-		if (!page && !limit) {
-			return null
-		}
-
-		const pageNumber = parseInt(page || '1', 10)
-		const limitNumber = parseInt(limit || '10', 10)
-
-		// Ensure reasonable limits
-		const maxLimit = 50
-		const actualLimit = Math.min(limitNumber, maxLimit)
-		const offset = (pageNumber - 1) * actualLimit
-
-		return {
-			limit: actualLimit,
-			offset: offset,
-			page: pageNumber
-		}
-	}
-
-	// Helper function to build search where clause
-	const buildSearchWhereClause = (search?: string) => {
-		if (!search) return {}
-
-		return {
-			name: {
-				[Op.iLike]: `%${search}%` // Case-insensitive search using ILIKE
-			}
-		}
-	}
-
-	// Helper function to build program include clause
-	const buildProgramIncludeClause = (programID?: string) => {
-		if (!programID) {
-			return [{
-				model: Program,
-				as: 'programs',
-				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] } as any,
-				through: { attributes: [] } as any
-			}]
-		}
-
-		return [{
-			model: Program,
-			as: 'programs',
-			where: { id: programID },
-			attributes: [] as any,
-			through: { attributes: [] } as any,
-			required: true
-		}]
-	}
-
-	// Helper function to build error message
-	const buildErrorMessage = (programID?: string, search?: string) => {
-		if (programID && search) {
-			return `No exercises found for program ${programID} matching "${search}"`
-		} else if (programID) {
-			return `No exercises found for program ${programID}`
-		} else if (search) {
-			return `No exercises found matching "${search}"`
-		}
-		return 'No exercises found'
-	}
-
 	// Public route - get all exercises with optional program filter, search, and pagination
 	router.get('/', async (req, res) => {
 		try {
@@ -119,7 +54,7 @@ export default () => {
 				// If pagination is applied, return structured response
 				const totalPages = Math.ceil(exercises.count / paginationOptions.limit)
 				const response = {
-					data: exercises.rows,
+					exercises: exercises.rows,
 					pagination: {
 						currentPage: paginationOptions.page,
 						totalPages,
@@ -234,7 +169,6 @@ export default () => {
 				return res.status(404).sendError('exercise.notFound')
 			}
 
-			// Try to delete the exercise - foreign key constraints will prevent deletion if completed exercises exist
 			await exercise.destroy()
 
 			return res.json(createSuccessResponse('exercise.deleted'))
@@ -244,12 +178,11 @@ export default () => {
 	})
 
 	// Add exercise to program
-	router.post('/:id', authenticateJWT, requireAdmin, async (req, res) => {
+	router.post('/assign-to-program', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
-			const { id } = req.params
-			const { programID } = req.body
+			const { exerciseID, programID } = req.body
 
-			const exercise = await Exercise.findByPk(id)
+			const exercise = await Exercise.findByPk(exerciseID)
 			if (!exercise) {
 				return res.status(404).sendError('exercise.notFound')
 			}
@@ -262,7 +195,7 @@ export default () => {
 			// Check if the association already exists
 			const existingAssociation = await ProgramWithExercise.findOne({
 				where: {
-					exerciseID: id,
+					exerciseID: exerciseID,
 					programID: programID
 				}
 			})
@@ -272,48 +205,113 @@ export default () => {
 			}
 
 			await ProgramWithExercise.create({
-				exerciseID: id,
+				exerciseID: exerciseID,
 				programID: programID
 			})
 
 			return res.json(createSuccessResponse('exercise.addedToProgram'))
 		} catch (error) {
-			return res.status(500).sendError('exercise.addToProgramFailed')
+			return res.status(500).sendError('exercise.addToProgramFailed', error)
 		}
 	})
 
 	// Remove exercise from program
 	router.delete('/', authenticateJWT, requireAdmin, async (req, res) => {
 		try {
-			const { programId, exerciseId } = req.body
+			const { exerciseID, programID } = req.query
 
-			const exercise = await Exercise.findByPk(exerciseId)
+			console.log('exerciseID', exerciseID)
+			console.log('programID', programID)
+			const exercise = await Exercise.findByPk(exerciseID as string)
 			if (!exercise) {
-				res.status(404)
-				return res.sendError('exercise.notFound')
+				return res.status(404).sendError('exercise.notFound')
 			}
 
 			// Find and delete the association
 			const association = await ProgramWithExercise.findOne({
 				where: {
-					exerciseID: exerciseId,
-					programID: programId
+					exerciseID: exerciseID,
+					programID: programID
 				}
 			})
 
 			if (!association) {
-				res.status(404)
-				return res.sendError('exercise.notInProgram')
+				return res.status(404).sendError('exercise.notInProgram')
 			}
 
 			await association.destroy()
 
 			return res.json(createSuccessResponse('exercise.removedFromProgram'))
 		} catch (error) {
-			res.status(500)
-			return res.sendError('exercise.removeFromProgramFailed')
+			return res.status(500).sendError('exercise.removeFromProgramFailed')
 		}
 	})
+
+	// Helper function to build pagination options
+	const buildPaginationOptions = (page?: string, limit?: string) => {
+		// If neither page nor limit is provided, return null to indicate no pagination
+		if (!page && !limit) {
+			return null
+		}
+
+		const pageNumber = parseInt(page || '1', 10)
+		const limitNumber = parseInt(limit || '10', 10)
+
+		// Ensure reasonable limits
+		const maxLimit = 50
+		const actualLimit = Math.min(limitNumber, maxLimit)
+		const offset = (pageNumber - 1) * actualLimit
+
+		return {
+			limit: actualLimit,
+			offset: offset,
+			page: pageNumber
+		}
+	}
+
+	// Helper function to build search where clause
+	const buildSearchWhereClause = (search?: string) => {
+		if (!search) return {}
+
+		return {
+			name: {
+				[Op.iLike]: `%${search}%` // Case-insensitive search using ILIKE
+			}
+		}
+	}
+
+	// Helper function to build program include clause
+	const buildProgramIncludeClause = (programID?: string) => {
+		if (!programID) {
+			return [{
+				model: Program,
+				as: 'programs',
+				attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] } as any,
+				through: { attributes: [] } as any
+			}]
+		}
+
+		return [{
+			model: Program,
+			as: 'programs',
+			where: { id: programID },
+			attributes: [] as any,
+			through: { attributes: [] } as any,
+			required: true
+		}]
+	}
+
+	// Helper function to build error message
+	const buildErrorMessage = (programID?: string, search?: string) => {
+		if (programID && search) {
+			return i18next.t('exercise.noExercisesForProgramAndSearch', { programID, search })
+		} else if (programID) {
+			return i18next.t('exercise.noExercisesForProgram', { programID })
+		} else if (search) {
+			return i18next.t('exercise.noExercisesMatchingSearch', { search })
+		}
+		return i18next.t('exercise.noExercisesFound')
+	}
 
 	return router
 }

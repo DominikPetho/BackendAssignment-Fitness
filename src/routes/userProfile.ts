@@ -67,6 +67,7 @@ export default () => {
             const userId = (req.user as UserModel).id
 
             const completedExercises = await CompletedExercise.findAll({
+                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'exerciseID'] },
                 where: { userID: userId },
                 include: [
                     {

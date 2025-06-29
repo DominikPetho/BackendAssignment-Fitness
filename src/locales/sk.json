@@ -19,7 +19,11 @@
             "fetchFailed": "Nepodarilo sa načítať cvičenia",
             "getProgramsFailed": "Nepodarilo sa načítať programy cvičenia",
             "cannotDeleteWithCompleted": "Cvičenie nie je možné vymazať, pretože má dokončené cvičenia. Najprv odstráňte všetky dokončené cvičenia.",
-            "checkDeleteFailed": "Nepodarilo sa skontrolovať, či je možné vymazať cvičenie"
+            "checkDeleteFailed": "Nepodarilo sa skontrolovať, či je možné vymazať cvičenie",
+            "noExercisesFound": "Nenašli sa žiadne cvičenia",
+            "noExercisesForProgram": "Nenašli sa žiadne cvičenia pre program {{programID}}",
+            "noExercisesMatchingSearch": "Nenašli sa žiadne cvičenia zodpovedajúce \"{{search}}\"",
+            "noExercisesForProgramAndSearch": "Nenašli sa žiadne cvičenia pre program {{programID}} zodpovedajúce \"{{search}}\""
         },
         "completedExercise": {
             "removed": "Dokončené cvičenie bolo úspešne odstránené",

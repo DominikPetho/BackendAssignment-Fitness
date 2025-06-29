@@ -19,7 +19,11 @@
             "fetchFailed": "Failed to fetch exercises",
             "getProgramsFailed": "Failed to get exercise programs",
             "cannotDeleteWithCompleted": "Cannot delete exercise because it has completed exercises. Please delete all completed exercises first.",
-            "checkDeleteFailed": "Failed to check if exercise can be deleted"
+            "checkDeleteFailed": "Failed to check if exercise can be deleted",
+            "noExercisesFound": "No exercises found",
+            "noExercisesForProgram": "No exercises found for program {{programID}}",
+            "noExercisesMatchingSearch": "No exercises found matching \"{{search}}\"",
+            "noExercisesForProgramAndSearch": "No exercises found for program {{programID}} matching \"{{search}}\""
         },
         "completedExercise": {
             "removed": "Completed exercise removed successfully",
