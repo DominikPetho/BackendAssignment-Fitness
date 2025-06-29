@@ -31,7 +31,6 @@ export const updateUserSchema = z.object({
     surname: z.string().min(1, 'Surname must not be empty').max(100, 'Surname must be less than 100 characters').optional(),
     nickName: z.string().min(1, 'Nickname must not be empty').max(50, 'Nickname must be less than 50 characters').optional(),
     age: z.number().int().min(1, 'Age must be at least 1').max(120, 'Age must be at most 120').optional(),
-    email: z.string().email('Please provide a valid email address').optional(),
     role: z.enum([USER_ROLE.ADMIN, USER_ROLE.USER]).optional()
 })
 
@@ -41,22 +40,3 @@ export type UpdateExerciseInput = z.infer<typeof updateExerciseSchema>
 export type CompleteExerciseInput = z.infer<typeof completeExerciseSchema>
 export type UpdateExerciseCompletionInput = z.infer<typeof updateExerciseCompletionSchema>
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
-
-// Validation middleware helper
-export const validateRequest = <T>(schema: z.ZodSchema<T>) => {
-    return (req: any, res: any, next: any) => {
-        try {
-            const validatedData = schema.parse(req.body)
-            req.validatedBody = validatedData
-            next()
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                const errorMessage = error.errors.map((err: any) => err.message).join(', ')
-                if (errorMessage) {
-                    return res.status(400).sendError(errorMessage)
-                }
-            }
-            return res.status(400).sendError('validation.failed')
-        }
-    }
-} 

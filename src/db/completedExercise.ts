@@ -8,16 +8,19 @@ import {
 import { DatabaseModel } from '../types/db'
 import { UserModel } from './user'
 import { ExerciseModel } from './exercise'
+import { ProgramModel } from './program'
 
 export class CompletedExerciseModel extends DatabaseModel {
     id: number
     userID: number
     exerciseID: number
+    programID: number
     completedAt: Date
     duration: number
 
     user: UserModel
     exercise: ExerciseModel
+    program: ProgramModel
 }
 
 export default (sequelize: Sequelize) => {
@@ -46,6 +49,16 @@ export default (sequelize: Sequelize) => {
             onDelete: 'RESTRICT',
             onUpdate: 'CASCADE'
         },
+        programID: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            references: {
+                model: 'programs',
+                key: 'id'
+            },
+            onDelete: 'RESTRICT',
+            onUpdate: 'CASCADE'
+        },
         completedAt: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -68,6 +81,9 @@ export default (sequelize: Sequelize) => {
             },
             {
                 fields: ['exerciseID']
+            },
+            {
+                fields: ['programID']
             }
         ]
     })
@@ -87,6 +103,14 @@ export default (sequelize: Sequelize) => {
                     allowNull: false
                 },
                 as: 'exercise'
+            }),
+
+            (CompletedExerciseModel as any).belongsTo(models.Program, {
+                foreignKey: {
+                    name: 'programID',
+                    allowNull: false
+                },
+                as: 'program'
             })
     }
 

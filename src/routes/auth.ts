@@ -2,9 +2,9 @@ import { Router, Request, Response, NextFunction } from 'express'
 import passport from 'passport'
 import { models } from '../db'
 import { generateToken } from '../middleware/auth'
-import { validateRequest, registerSchema, loginSchema, RegisterInput, LoginInput } from '../validation/auth'
+import { registerSchema, loginSchema, RegisterInput, LoginInput } from '../validation/auth'
 import { createAuthSuccessResponse } from '../types/response/auth'
-import { ValidatedRequest } from '../validation/validationInterface'
+import { ValidatedRequest, validateRequest } from '../validation/validationInterface'
 import { Op } from 'sequelize'
 
 const router: Router = Router()

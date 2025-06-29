@@ -1,7 +1,7 @@
 import express from 'express'
 import { Op } from 'sequelize'
 import { authenticateJWT } from '../middleware/auth'
-import { validateRequest } from '../validation/admin'
+import { validateRequest } from '../validation/validationInterface'
 import { completeExerciseSchema, updateCompletedExerciseSchema } from '../validation/auth'
 import { ValidatedRequest } from '../validation/validationInterface'
 import { CompleteExerciseInput, UpdateCompletedExerciseInput } from '../validation/auth'
@@ -11,7 +11,7 @@ import { AuthenticatedRequest } from '../middleware/auth'
 import { UserModel } from '../db/user'
 
 const router = express.Router()
-const { User, Exercise, CompletedExercise, ProgramWithExercise } = models
+const { User, Exercise, CompletedExercise, ProgramWithExercise, Program } = models
 
 export default () => {
     router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res) => {
@@ -39,7 +39,7 @@ export default () => {
         async (req: ValidatedRequest<CompleteExerciseInput>, res) => {
             try {
                 const userId = (req.user as UserModel).id
-                const { exerciseID, duration } = req.validatedBody
+                const { exerciseID, programID, duration } = req.validatedBody
 
                 // Check if exercise exists
                 const exercise = await Exercise.findByPk(exerciseID)
@@ -47,9 +47,12 @@ export default () => {
                     return res.status(404).sendError('exercise.notFound')
                 }
 
-                // Check if exercise is part of any program
+                // Check if exercise is part of the specified program
                 const exerciseInProgram = await ProgramWithExercise.findOne({
-                    where: { exerciseID }
+                    where: {
+                        exerciseID,
+                        programID
+                    }
                 })
 
                 if (!exerciseInProgram) {
@@ -60,6 +63,7 @@ export default () => {
                 const completedExercise = await CompletedExercise.create({
                     userID: userId,
                     exerciseID,
+                    programID,
                     completedAt: new Date(),
                     duration
                 })
@@ -76,13 +80,18 @@ export default () => {
             const userId = (req.user as UserModel).id
 
             const completedExercises = await CompletedExercise.findAll({
-                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'exerciseID'] },
+                attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'exerciseID', 'programID'] },
                 where: { userID: userId },
                 include: [
                     {
                         model: Exercise,
                         as: 'exercise',
                         attributes: ['id', 'name', 'difficulty']
+                    },
+                    {
+                        model: Program,
+                        as: 'program',
+                        attributes: ['id', 'name']
                     }
                 ],
                 order: [['completedAt', 'DESC']]

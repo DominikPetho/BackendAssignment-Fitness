@@ -60,29 +60,10 @@ export const loginSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 
-// Validation middleware helper
-export const validateRequest = <T>(schema: z.ZodSchema<T>) => {
-    return (req: any, res: any, next: any) => {
-        try {
-            const validatedData = schema.parse(req.body)
-            req.validatedBody = validatedData
-            next()
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                const errorMessage = error.errors.map((err: any) => err.message).join(', ')
-                if (errorMessage) {
-                    return res.status(400).sendError("validation.failed", errorMessage)
-                }
-                return res.status(400).sendError('validation.failed')
-            }
-            return res.status(400).sendError('validation.failed')
-        }
-    }
-}
-
 // Completed exercise validation schemas
 export const completeExerciseSchema = z.object({
     exerciseID: z.number().int().positive('Exercise ID must be a positive integer'),
+    programID: z.number().int().positive('Program ID must be a positive integer'),
     duration: z.number().int().min(1, 'Duration must be at least 1 second')
 })
 

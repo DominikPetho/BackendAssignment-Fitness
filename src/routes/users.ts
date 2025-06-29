@@ -2,10 +2,11 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { models } from '../db'
 import { authenticateJWT, requireAdmin } from '../middleware/auth'
 import { createErrorResponse } from '../types/response/message'
-import { validateRequest, updateUserSchema, UpdateUserInput } from '../validation/admin'
+import { updateUserSchema, UpdateUserInput } from '../validation/admin'
 import { AuthenticatedRequest } from '../middleware/auth'
 import { USER_ROLE } from '../utils/enums'
 import { ValidatedRequest } from '../validation/validationInterface'
+import { validateRequest } from '../validation/validationInterface'
 
 const router: Router = Router()
 
@@ -72,7 +73,6 @@ export default () => {
         }
     })
 
-    // Update user (ADMIN only)
     router.patch('/:id', authenticateJWT, requireAdmin, validateRequest(updateUserSchema), async (req: ValidatedRequest<UpdateUserInput>, res) => {
         try {
             const { id } = req.params
